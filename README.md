@@ -1,36 +1,42 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Apka Vission — client portal and task tracker
 
-## Getting Started
+Clients sign in to see how their project is going. The team works from the same
+application, on a board.
 
-First, run the development server:
-
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+```
+/portal    a client's projects, progress, scope, requests and approvals
+/work      the team's board, every project, and the request queue
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Both halves are one Next.js application. Which one a person lands on is decided
+by whether their login has a row in `portal.staff` or in `portal.client_users`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## A separate project on purpose
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+This does not import anything from the company website and never should. The
+owner's rule: a change to one must not be able to break the other. What that
+costs — duplicated design tokens, a second staff list — is written down in
+[docs/PROGRESS.md](docs/PROGRESS.md) rather than discovered later.
 
-## Learn More
+The database is shared and the schemas are not: the website owns `company`, this
+owns `portal`, and no foreign key crosses between them.
 
-To learn more about Next.js, take a look at the following resources:
+## Getting started
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```
+npm install
+cp .env.example .env.local
+npm run dev
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Then [docs/owner-checklist.md](docs/owner-checklist.md), step 1 — nothing works
+until the migrations are run.
 
-## Deploy on Vercel
+## Checks
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+npm run typecheck
+npm run lint
+npm test
+npm run build
+```

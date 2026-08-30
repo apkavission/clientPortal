@@ -15,6 +15,11 @@
 
 # next.js
 /.next/
+# Any other build output, including the one a verification build writes while
+# the dev server keeps `.next`. Tailwind v4 finds its own sources and skips
+# whatever git ignores -- an unignored build directory gets scanned, and the
+# class-shaped strings inside it compile to CSS that will not parse.
+/.next-*/
 /out/
 
 # production
@@ -39,3 +44,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Playwright output. A run artefact, not source — and `.last-run.json` changes
+# on every run, which makes every commit look like it touched the tests.
+/test-results/
+/playwright-report/

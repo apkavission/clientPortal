@@ -1,26 +1,527 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/* ===========================================================================
+   Design tokens.
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+   Written for this application, not imported from the services site.
+
+   That duplication is deliberate and it is the price of a decision the owner
+   made on 2026-08-29: the portal must not depend on the company website, so a
+   change there can never break a client's login. A shared package would have
+   saved this file and reintroduced exactly the coupling that was rejected.
+
+   What is shared is the *brand* — the same accent, the same greys, so a client
+   moving between the two does not feel handed to a different company. Values
+   are copied on purpose and are expected to be kept in step by hand; there is
+   no build step that can do it, and pretending otherwise would be worse.
+
+   Three layers, in order:
+     1. :root                        light theme (the default)
+     2. @media prefers-color-scheme   dark, only when no explicit choice is set
+     3. [data-theme="..."]            explicit user choice, wins over both
+
+   No component may contain a literal colour.
+   =========================================================================== */
+
+:root {
+  color-scheme: light;
+
+  /* -- Surface ----------------------------------------------------------- */
+  --bg: #f4f6f8;
+  --surface: #ffffff;
+  --surface-2: #eef1f4;
+  --surface-3: #e3e8ed;
+  --overlay: rgb(11 18 32 / 0.45);
+
+  /* -- Skeleton -----------------------------------------------------------
+     Two tokens rather than reused surface steps, because the surface scale
+     inverts between themes: in light a higher number is darker, in dark it is
+     lighter. A skeleton built from surface steps would sweep a highlight in
+     one theme and a shadow in the other.                                   */
+  --skeleton: #e3e8ed;
+  --skeleton-sheen: rgb(255 255 255 / 0.75);
+
+  /* -- Border ------------------------------------------------------------ */
+  --border: #dde2e9;
+  --border-strong: #c3cad4;
+  --ring: #0c6f6e;
+
+  /* -- Text -------------------------------------------------------------- */
+  --text: #0b1220;
+  --text-muted: #475467;
+  --text-subtle: #54607a;
+  --text-inverse: #ffffff;
+
+  /* -- Accent ------------------------------------------------------------ */
+  --accent: #0c6f6e;
+  --accent-hover: #0a6362;
+  --accent-fg: #ffffff;
+  --accent-soft: #e6f4f4;
+
+  /* -- Semantic ---------------------------------------------------------- */
+  --success: #067647;
+  --success-soft: #e7f6ee;
+  --warning: #b54708;
+  --warning-soft: #fdf3e7;
+  --danger: #c92a1d;
+  --danger-soft: #fdeceb;
+  --info: #175cd3;
+  --info-soft: #eaf1fd;
+
+  /* -- Depth ------------------------------------------------------------- */
+  --shadow-1: 0 1px 2px rgb(16 24 40 / 0.06), 0 1px 1px rgb(16 24 40 / 0.04);
+  --shadow-2: 0 6px 12px -3px rgb(16 24 40 / 0.10), 0 2px 5px -2px rgb(16 24 40 / 0.06);
+  --shadow-3: 0 20px 24px -4px rgb(16 24 40 / 0.08), 0 8px 8px -4px rgb(16 24 40 / 0.03);
+  --highlight: transparent;
+
+  /* -- Type ---------------------------------------------------------------
+     The variable the layout sets is listed first and the stack behind it is
+     real, so the page is readable before the webfont arrives rather than
+     invisible while it loads.                                              */
+  --font-sans-stack: var(--font-sans-loaded), ui-sans-serif, system-ui,
+    "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono-stack: var(--font-mono-loaded), ui-monospace, "SFMono-Regular",
+    "Cascadia Mono", Consolas, monospace;
+
+  /* -- Shape and motion -------------------------------------------------- */
+  --radius-base: 0.75rem;
+  --duration-fast: 120ms;
+  --duration-base: 200ms;
+  --duration-slow: 400ms;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+
+    --bg: #080b11;
+    --surface: #0e131b;
+    --surface-2: #161d27;
+    --surface-3: #1f2833;
+    --overlay: rgb(3 6 12 / 0.6);
+
+    --skeleton: #1f2833;
+    --skeleton-sheen: rgb(255 255 255 / 0.06);
+
+    --border: #222c38;
+    --border-strong: #33404f;
+    --ring: #2dd4bf;
+
+    --text: #e8edf4;
+    --text-muted: #98a5b6;
+    --text-subtle: #808fa2;
+    --text-inverse: #04201f;
+
+    --accent: #2dd4bf;
+    --accent-hover: #5eead4;
+    --accent-fg: #04201f;
+    --accent-soft: #0d2b2a;
+
+    --success: #3ccb7f;
+    --success-soft: #0d2419;
+    --warning: #f5a524;
+    --warning-soft: #2a1c07;
+    --danger: #f0645a;
+    --danger-soft: #2b100e;
+    --info: #6398f5;
+    --info-soft: #0f1c33;
+
+    --shadow-1: 0 1px 2px rgb(0 0 0 / 0.4);
+    --shadow-2: 0 4px 10px -2px rgb(0 0 0 / 0.5);
+    --shadow-3: 0 20px 30px -8px rgb(0 0 0 / 0.6);
+    --highlight: rgb(255 255 255 / 0.06);
   }
 }
 
+/* An explicit choice wins over the system in both directions. Both blocks are
+   required: without the light one, a person who chose light on a dark machine
+   would still get dark. */
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --bg: #080b11;
+  --surface: #0e131b;
+  --surface-2: #161d27;
+  --surface-3: #1f2833;
+  --overlay: rgb(3 6 12 / 0.6);
+
+  --skeleton: #1f2833;
+  --skeleton-sheen: rgb(255 255 255 / 0.06);
+
+  --border: #222c38;
+  --border-strong: #33404f;
+  --ring: #2dd4bf;
+
+  --text: #e8edf4;
+  --text-muted: #98a5b6;
+  --text-subtle: #808fa2;
+  --text-inverse: #04201f;
+
+  --accent: #2dd4bf;
+  --accent-hover: #5eead4;
+  --accent-fg: #04201f;
+  --accent-soft: #0d2b2a;
+
+  --success: #3ccb7f;
+  --success-soft: #0d2419;
+  --warning: #f5a524;
+  --warning-soft: #2a1c07;
+  --danger: #f0645a;
+  --danger-soft: #2b100e;
+  --info: #6398f5;
+  --info-soft: #0f1c33;
+
+  --shadow-1: 0 1px 2px rgb(0 0 0 / 0.4);
+  --shadow-2: 0 4px 10px -2px rgb(0 0 0 / 0.5);
+  --shadow-3: 0 20px 30px -8px rgb(0 0 0 / 0.6);
+  --highlight: rgb(255 255 255 / 0.06);
+}
+
+/* ---------------------------------------------------------------------------
+   Tailwind sees the tokens.
+   --------------------------------------------------------------------------- */
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-overlay: var(--overlay);
+  --color-skeleton: var(--skeleton);
+
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-ring: var(--ring);
+
+  --color-text: var(--text);
+  --color-text-muted: var(--text-muted);
+  --color-text-subtle: var(--text-subtle);
+  --color-text-inverse: var(--text-inverse);
+
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-fg: var(--accent-fg);
+  --color-accent-soft: var(--accent-soft);
+
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
+
+  --radius-base: var(--radius-base);
+
+  --font-sans: var(--font-sans-stack);
+  --font-mono: var(--font-mono-stack);
+}
+
+/* ---------------------------------------------------------------------------
+   Base.
+   --------------------------------------------------------------------------- */
+
+* {
+  border-color: var(--border);
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans-stack);
+  -webkit-font-smoothing: antialiased;
+}
+
+:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+/*
+  Nothing animates for somebody who asked for that.
+
+  `!important` because this has to beat every utility and inline style in the
+  application, including ones written later by somebody who has not read this.
+*/
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Utilities used across the application.
+   --------------------------------------------------------------------------- */
+
+@utility container-page {
+  margin-inline: auto;
+  width: 100%;
+  max-width: 80rem;
+  padding-inline: 1.25rem;
+
+  @media (width >= 40rem) {
+    padding-inline: 2rem;
+  }
+
+  /*
+    Two steps up on a wide monitor.
+
+    Capped at 80rem everywhere until 1600px, because that is where a laptop
+    stops and a desk monitor starts. Above it the frame grows so a table stops
+    truncating and a board stops scrolling; prose does not, because `.measure`
+    caps it at 68ch regardless of what the container does.
+
+    Steps rather than a fluid width: a layout that is never twice the same
+    cannot be checked, and "it looked fine on mine" is how the 1280px cap
+    survived this long.
+  */
+  @media (width >= 100rem) {
+    max-width: 90rem;
+  }
+
+  @media (width >= 120rem) {
+    max-width: 100rem;
+  }
+}
+
+/* A line length that stays readable. Roughly 65 characters. */
+@utility measure {
+  max-width: 65ch;
+}
+
+@utility surface-raised {
+  background-color: var(--surface);
+  box-shadow: var(--shadow-1);
+}
+
+/*
+  The placeholder a piece of content leaves while it loads.
+
+  A sweep rather than a pulse: a pulse reads as "broken and retrying", a sweep
+  reads as "on its way". Stops entirely under reduced motion, above.
+*/
+@utility skeleton {
+  position: relative;
+  overflow: hidden;
+  background-color: var(--skeleton);
+  border-radius: 0.5rem;
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(
+      90deg,
+      transparent,
+      var(--skeleton-sheen),
+      transparent
+    );
+    animation: skeleton-sweep 1.6s infinite;
+  }
+}
+
+@keyframes skeleton-sweep {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   The loader's animation.
+
+   Copied from the company website rather than re-invented, because the owner's
+   standing rule is one loader across the estate — the mark, the words arriving
+   from the left and the right, and the arrow drawing itself. The first version
+   of this file had a loader of my own devising with the words as text and no
+   mark at all, which was wrong twice over: it changed a thing that was settled,
+   and it dropped the logo.
+
+   These names and values match `services/src/app/globals.css`. Keep them in
+   step by hand, like the tokens above.
+   --------------------------------------------------------------------------- */
+
+@keyframes brand-mark-in {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes brand-word-left {
+  from {
+    opacity: 0;
+    transform: translateX(2rem) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes brand-word-right {
+  from {
+    opacity: 0;
+    transform: translateX(-2rem) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* The mark breathing while the wait lasts. A child of the entrance animation,
+   so the two never fight over the same transform. */
+@keyframes brand-breathe {
+  0%,
+  100% {
+    opacity: 0.75;
+    transform: scale(0.985);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.015);
+  }
+}
+
+/* The arrow drawing itself, holding, then clearing. A stroke that draws reads
+   as progress; a stroke that fades reads as an image loading. */
+@keyframes brand-arrow-draw {
+  0% {
+    stroke-dashoffset: 100;
+    opacity: 0;
+  }
+  18% {
+    opacity: 1;
+  }
+  62% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+  86% {
+    stroke-dashoffset: 0;
+    opacity: 0;
+  }
+  100% {
+    stroke-dashoffset: 100;
+    opacity: 0;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   One mark per theme, chosen by CSS.
+
+   Both files are in the HTML and one is hidden, so the correct mark is painted
+   in the first frame — no hydration, no flash, and it still works with
+   JavaScript turned off. Choosing in JavaScript would mean a blank loader on
+   the one screen that exists because hydration has not happened yet.
+   --------------------------------------------------------------------------- */
+
+@layer utilities {
+  .theme-dark-only {
+    display: none;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .theme-light-only {
+      display: none;
+    }
+    :root:not([data-theme="light"]) .theme-dark-only {
+      display: revert-layer;
+    }
+  }
+
+  :root[data-theme="light"] .theme-light-only {
+    display: revert-layer;
+  }
+  :root[data-theme="light"] .theme-dark-only {
+    display: none;
+  }
+
+  :root[data-theme="dark"] .theme-light-only {
+    display: none;
+  }
+  :root[data-theme="dark"] .theme-dark-only {
+    display: revert-layer;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Printing.
+
+   The client document is saved as a PDF by printing it, so what the printer
+   sees has to be the document and nothing else — no sidebar, no header, no
+   buttons. `print:hidden` marks the parts that are for the person preparing it.
+
+   Colours are forced to print. Browsers strip backgrounds by default to save
+   ink, which turns a bordered total box into an invisible one and takes the
+   structure out of the page.
+   --------------------------------------------------------------------------- */
+
+@media print {
+  :root {
+    /* Always the light palette. A dark theme printed is a black page. */
+    color-scheme: light;
+    --bg: #ffffff;
+    --surface: #ffffff;
+    --surface-2: #ffffff;
+    --text: #111111;
+    --text-muted: #444444;
+    --text-subtle: #666666;
+    --border: #cccccc;
+    --border-strong: #999999;
+  }
+
+  body {
+    background: #ffffff;
+  }
+
+  aside,
+  header nav,
+  .print\:hidden {
+    display: none !important;
+  }
+
+  main {
+    padding: 0 !important;
+  }
+
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* A heading should not be the last thing on a page. */
+  h1, h2, h3 {
+    break-after: avoid;
+  }
+
+  section {
+    break-inside: avoid;
+  }
 }

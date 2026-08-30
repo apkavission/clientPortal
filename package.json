@@ -3,24 +3,47 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --port 3100",
     "build": "next build",
-    "start": "next start",
-    "lint": "eslint"
+    "start": "next start --port 3100",
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "format": "prettier --write .",
+    "check:schema": "node scripts/check-schema.mjs",
+    "check:policies": "node scripts/check-policies.mjs",
+    "gen:types": "node scripts/gen-types.mjs"
   },
   "dependencies": {
+    "@supabase/ssr": "^0.12.5",
+    "@supabase/supabase-js": "^2.112.4",
+    "clsx": "^2.1.1",
+    "lucide-react": "^1.35.0",
     "next": "16.3.3",
+    "nodemailer": "^9.0.6",
     "react": "19.2.8",
-    "react-dom": "19.2.8"
+    "react-dom": "19.2.8",
+    "server-only": "^0.0.1",
+    "tailwind-merge": "^3.6.0",
+    "zod": "^4.5.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.62.1",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
+    "@types/nodemailer": "^8.0.1",
+    "@types/pg": "^8.23.1",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vitejs/plugin-react": "^6.1.1",
     "eslint": "^9",
     "eslint-config-next": "16.3.3",
+    "pg": "^8.23.0",
+    "prettier": "^3.9.6",
+    "supabase": "^2.116.0",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.1.11"
   }
 }
