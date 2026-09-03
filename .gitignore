@@ -49,3 +49,9 @@ next-env.d.ts
 # on every run, which makes every commit look like it touched the tests.
 /test-results/
 /playwright-report/
+
+# Playwright storage state. These hold a real Supabase auth cookie — an access
+# token and a refresh token — so a committed one is a live credential in a
+# repository. services and tracker have always ignored this directory; this one
+# did not, and two sessions were committed before anybody looked.
+e2e/.auth/

@@ -1,6 +1,7 @@
 import { Shell } from "@/components/admin/shell";
+import { ConfirmProvider } from "@/components/ui/confirm-dialog";
 import { requireStaff } from "@/lib/auth/session";
-import { navFor } from "@/lib/auth/menu";
+import { navFor, roleLabel } from "@/lib/auth/menu";
 
 /**
  * Everything in this group is the company's own panel.
@@ -9,12 +10,22 @@ import { navFor } from "@/lib/auth/menu";
  * page still calls `requireMenu()` for its own key — this one only answers "are
  * you staff at all", and the per-screen permission is a different question.
  */
-export default async function PanelLayout({ children }: { children: React.ReactNode }) {
+export default async function PanelLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const session = await requireStaff();
 
   return (
-    <Shell groups={navFor(session.staff)} who={session.staff.full_name}>
-      {children}
-    </Shell>
+    <ConfirmProvider>
+      <Shell
+        groups={navFor(session.staff)}
+        who={session.staff.full_name}
+        role={roleLabel(session.staff.role_key)}
+      >
+        {children}
+      </Shell>
+    </ConfirmProvider>
   );
 }

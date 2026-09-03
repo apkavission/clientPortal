@@ -2,6 +2,7 @@ import "server-only";
 
 import { createClient } from "@/lib/supabase/server";
 import { money, type Money } from "@/lib/money";
+import type { PageRequest } from "@/lib/pagination";
 import type {
   ApprovalRow,
   ClientProjectRow,
@@ -10,6 +11,7 @@ import type {
   ProjectPhaseRow,
   RequirementRow,
   StaffRow,
+  ServiceMasterRow,
   TaskRow,
 } from "@/types/database";
 
@@ -29,23 +31,56 @@ export interface ClientSummary extends ClientRow {
   projectCount: number;
 }
 
-export async function getClients(): Promise<ClientSummary[]> {
+/**
+ * Clients, a page at a time.
+ *
+ * ---------------------------------------------------------------------------
+ * **The count comes back with the rows**, from one request. Supabase's
+ * `{ count: "exact" }` runs the count against the same filter as the select,
+ * so the total can never describe a different set from the rows beside it —
+ * which is what a second, separately-written count query eventually does.
+ *
+ * **Only the page's own projects are counted.** The old version read every
+ * project row in the database to count them per client; on a page of
+ * twenty-five that is a table scan to draw twenty-five numbers.
+ *
+ * `page` is optional so the callers that want the whole list — a select, an
+ * export — keep working unchanged.
+ */
+export async function getClients(
+  request?: PageRequest,
+): Promise<{ rows: ClientSummary[]; total: number | null }> {
   const supabase = await createClient();
 
-  const [{ data: clients }, { data: projects }] = await Promise.all([
-    supabase.from("clients").select("*").order("name"),
-    supabase.from("client_projects").select("client_id").is("archived_at", null),
-  ]);
+  let query = supabase
+    .from("clients")
+    .select("*", { count: "exact" })
+    .order("name");
+
+  if (request) query = query.range(request.from, request.to);
+
+  const { data: clients, count } = await query;
+
+  const { data: projects } = await supabase
+    .from("client_projects")
+    .select("client_id")
+    .is("archived_at", null)
+    /* Only for the clients on this page. `in` with an empty list matches
+       nothing, which is right — an empty page has nothing to count. */
+    .in("client_id", (clients ?? []).map((row) => row.id));
 
   const counts = new Map<string, number>();
   for (const row of projects ?? []) {
     counts.set(row.client_id, (counts.get(row.client_id) ?? 0) + 1);
   }
 
-  return (clients ?? []).map((client) => ({
-    ...client,
-    projectCount: counts.get(client.id) ?? 0,
-  }));
+  return {
+    rows: (clients ?? []).map((client) => ({
+      ...client,
+      projectCount: counts.get(client.id) ?? 0,
+    })),
+    total: count ?? null,
+  };
 }
 
 export async function getClient(id: string): Promise<ClientRow | null> {
@@ -62,21 +97,36 @@ export interface ProjectSummary extends ClientProjectRow {
   client: { id: string; name: string; company_name: string | null } | null;
 }
 
-export async function getProjects(): Promise<ProjectSummary[]> {
+/**
+ * Live projects, newest first, a page at a time.
+ *
+ * The count comes back with the rows from one request, so it can never
+ * describe a different set from the rows beside it — which is what a
+ * separately-written count query eventually does.
+ *
+ * `request` is optional: callers that want the whole list keep working.
+ */
+export async function getProjects(
+  request?: PageRequest,
+): Promise<{ rows: ProjectSummary[]; total: number | null }> {
   const supabase = await createClient();
 
-  const { data, error } = await supabase
+  let builder = supabase
     .from("client_projects")
-    .select("*, client:clients(id, name, company_name)")
+    .select("*, client:clients(id, name, company_name)", { count: "exact" })
     .is("archived_at", null)
     .order("created_at", { ascending: false });
 
+  if (request) builder = builder.range(request.from, request.to);
+
+  const { data, error, count } = await builder;
+
   if (error) {
     console.error("[admin] projects failed:", error.message);
-    return [];
+    return { rows: [], total: null };
   }
 
-  return (data ?? []) as unknown as ProjectSummary[];
+  return { rows: (data ?? []) as unknown as ProjectSummary[], total: count ?? null };
 }
 
 /**
@@ -217,23 +267,39 @@ export interface RequestWithProject extends ClientRequestRow {
   waitingDays: number;
 }
 
-export async function getOpenRequests(): Promise<RequestWithProject[]> {
+/**
+ * Requests still waiting on an answer, oldest first.
+ *
+ * Paged for consistency with every other list, though a queue that needs a
+ * second page is itself the news — twenty-five unanswered requests is a
+ * backlog, not a screen problem.
+ */
+export async function getOpenRequests(
+  request?: PageRequest,
+): Promise<{ rows: RequestWithProject[]; total: number | null }> {
   const supabase = await createClient();
 
-  const { data } = await supabase
+  let builder = supabase
     .from("client_requests")
-    .select("*, project:client_projects(name, slug)")
+    .select("*, project:client_projects(name, slug)", { count: "exact" })
     .in("status", ["submitted", "under_review"])
     .order("created_at");
 
+  if (request) builder = builder.range(request.from, request.to);
+
+  const { data, count } = await builder;
+
   const now = Date.now();
 
-  return (data ?? []).map((row) => ({
-    ...row,
-    waitingDays: Math.floor(
-      (now - new Date(row.created_at as string).getTime()) / 86_400_000,
-    ),
-  })) as unknown as RequestWithProject[];
+  return {
+    rows: (data ?? []).map((row) => ({
+      ...row,
+      waitingDays: Math.floor(
+        (now - new Date(row.created_at as string).getTime()) / 86_400_000,
+      ),
+    })) as unknown as RequestWithProject[],
+    total: count ?? null,
+  };
 }
 
 /* -------------------------------------------------------------------------- */
@@ -321,4 +387,59 @@ export async function getProjectMessages(projectId: string) {
       from_client: row.client_user_id !== null,
     }))
     .reverse();
+}
+
+/**
+ * The service catalogue, for choosing what a project includes.
+ *
+ * Read from `portal.services_master` — a one-directional view onto
+ * `company.services`, which is the same list a client reads on the public site.
+ * Copying the catalogue into this schema would be a second one kept in step by
+ * remembering to, and this estate has enough of those.
+ *
+ * Only what is published is offered. A draft service is one we have not decided
+ * how to sell yet, and putting it on a client's project is deciding.
+ */
+export async function getServiceOptions(): Promise<ServiceMasterRow[]> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("services_master")
+    .select("slug, name, short_name, summary, sort_order, is_offered")
+    .eq("is_offered", true)
+    .order("sort_order", { ascending: true });
+
+  if (error) {
+    // Not thrown. A project form that cannot list services should still save
+    // everything else about the project.
+    console.error("[services] catalogue unavailable:", error.message);
+    return [];
+  }
+
+  return (data ?? []) as ServiceMasterRow[];
+}
+
+/**
+ * Who is on a project, as staff ids.
+ *
+ * Membership is not decoration: `scope_is_complete()` calls a project
+ * delivered when nobody on it is still unfinished, so this table decides when
+ * a project can be closed and when a change starts counting against the
+ * allowance. Nothing in the application wrote it until 2026-09-01 — rows
+ * arrived by hand, or did not arrive.
+ */
+export async function getProjectMemberIds(projectId: string): Promise<string[]> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("project_members")
+    .select("staff_id")
+    .eq("project_id", projectId);
+
+  if (error) {
+    console.error("[projects] members read failed:", error.message);
+    return [];
+  }
+
+  return (data ?? []).map((row) => row.staff_id);
 }

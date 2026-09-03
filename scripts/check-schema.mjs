@@ -13,16 +13,25 @@
 import { createClient } from "@supabase/supabase-js";
 import { readFileSync } from "node:fs";
 
+/**
+ * Read against this script rather than against the working directory.
+ *
+ * This was `c:/Users/kumar/portal/.env.local`, an absolute path that worked on
+ * exactly one computer. A plain relative string would not fix it either: it
+ * resolves against wherever the command was run from, so the script would work
+ * from the project root and fail from anywhere else.
+ */
 function env(path) {
   const out = {};
-  for (const line of readFileSync(path, "utf8").split(/\r?\n/)) {
-    const match = /^([A-Z_]+)=(.*)$/.exec(line.trim());
+  const text = readFileSync(new URL(path, import.meta.url), "utf8");
+  for (const line of text.split(/\r?\n/)) {
+    const match = /^([A-Z0-9_]+)=(.*)$/.exec(line.trim());
     if (match) out[match[1]] = match[2].replace(/^"|"$/g, "");
   }
   return out;
 }
 
-const config = env("c:/Users/kumar/portal/.env.local");
+const config = env("../.env.local");
 const url = config.NEXT_PUBLIC_SUPABASE_URL;
 const key = config.SUPABASE_SERVICE_ROLE_KEY;
 

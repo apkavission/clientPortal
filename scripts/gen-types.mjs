@@ -30,7 +30,7 @@ const OUT = "src/types/database.generated.ts";
 const config = Object.fromEntries(
   readFileSync(".env.local", "utf8")
     .split(/\r?\n/)
-    .map((line) => /^([A-Z_]+)=(.*)$/.exec(line.trim()))
+    .map((line) => /^([A-Z0-9_]+)=(.*)$/.exec(line.trim()))
     .filter(Boolean)
     .map((m) => [m[1], m[2].replace(/^"|"$/g, "")]),
 );

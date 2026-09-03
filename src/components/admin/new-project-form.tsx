@@ -7,6 +7,7 @@ import { Field, FIELD } from "@/components/ui/field";
 import { createProject } from "@/lib/actions/projects";
 import { idleState } from "@/lib/actions/state";
 import type { ClientRow } from "@/types/database";
+import { useBusyWhile } from "@/components/forms/use-busy-while";
 
 /**
  * Two fields, and then the real form.
@@ -24,6 +25,7 @@ export function NewProjectForm({
   preselected: string | null;
 }) {
   const [state, action, pending] = useActionState(createProject, idleState);
+  useBusyWhile(pending, "Creating project");
 
   return (
     <form action={action} className="space-y-5">

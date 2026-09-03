@@ -34,6 +34,20 @@ const triageSchema = z
     decision: z.enum(["under_review", "accepted", "declined"]),
     review_note: z.string().trim().max(2000).optional(),
     is_scope_change: z.boolean().optional(),
+
+    /*
+      What this change costs, if anybody has decided yet.
+
+      Optional rather than required, because pricing and answering are two
+      separate decisions and forcing them together would put a made-up number
+      on every accepted request. Blank stays null, which the screen shows as
+      "not priced" rather than as zero.
+    */
+    quoted_amount: z.coerce
+      .number()
+      .min(0, "A price cannot be negative.")
+      .max(99_999_999, "That is more than this field can hold.")
+      .optional(),
   })
   /*
     Declining without a reason is refused here as well as by the table.
@@ -50,6 +64,29 @@ const triageSchema = z
     },
   );
 
+/**
+ * The ad-hoc fields on one request, as a flat object.
+ *
+ * Labels and values arrive as two parallel lists from the form, which is what
+ * a repeating pair of inputs submits. A row with no label is dropped rather
+ * than stored under an empty key: an unnamed value is not a field, and keeping
+ * it would put `"": "12000"` in the record for somebody to puzzle over later.
+ */
+function extraFields(formData: FormData): Record<string, string> {
+  const labels = formData.getAll("extra_label").map(String);
+  const values = formData.getAll("extra_value").map(String);
+
+  const out: Record<string, string> = {};
+
+  for (const [index, rawLabel] of labels.entries()) {
+    const label = rawLabel.trim();
+    const value = (values[index] ?? "").trim();
+    if (label) out[label] = value;
+  }
+
+  return out;
+}
+
 /** The team answers a request. */
 export async function triageRequest(
   _previous: ActionState,
@@ -62,6 +99,7 @@ export async function triageRequest(
     decision: formData.get("decision"),
     review_note: formData.get("review_note") || undefined,
     is_scope_change: formData.get("is_scope_change") === "on",
+    quoted_amount: formData.get("quoted_amount") || undefined,
   });
 
   if (!parsed.success) {
@@ -80,6 +118,15 @@ export async function triageRequest(
       status: parsed.data.decision,
       review_note: parsed.data.review_note ?? null,
       is_scope_change: parsed.data.is_scope_change ?? false,
+
+      /* Null when the box was left empty, so "nobody has priced it" stays
+         distinguishable from "priced at nothing". */
+      quoted_amount: parsed.data.quoted_amount ?? null,
+
+      /* Whatever else this one request needed recording, as label/value pairs
+         from the repeating rows on the form. */
+      extra: extraFields(formData),
+
       reviewed_by: session.staff.id,
     })
     .eq("id", parsed.data.request_id);

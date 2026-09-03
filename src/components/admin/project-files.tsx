@@ -12,6 +12,8 @@ import {
 } from "@/lib/actions/files";
 import { idleState } from "@/lib/actions/state";
 import { cn, formatDate } from "@/lib/utils";
+import { useConfirm } from "@/components/ui/confirm-dialog";
+import { useBusyWhile } from "@/components/forms/use-busy-while";
 
 export interface ProjectFile {
   id: string;
@@ -52,6 +54,7 @@ export function ProjectFiles({
   files: ProjectFile[];
 }) {
   const [state, action, pending] = useActionState(uploadProjectFile, idleState);
+  useBusyWhile(pending, "Working");
   const form = useRef<HTMLFormElement>(null);
   const [open, setOpen] = useState(false);
 
@@ -196,6 +199,7 @@ export function ProjectFiles({
 
 function Visibility({ fileId, visible }: { fileId: string; visible: boolean }) {
   const [state, action, pending] = useActionState(setFileVisibility, idleState);
+  useBusyWhile(pending, "Saving file visibility");
 
   return (
     <form action={action}>
@@ -226,12 +230,31 @@ function Visibility({ fileId, visible }: { fileId: string; visible: boolean }) {
 
 function RemoveFile({ fileId, name }: { fileId: string; name: string }) {
   const [state, action, pending] = useActionState(removeProjectFile, idleState);
+  useBusyWhile(pending, "Removing project file");
+  const form = useRef<HTMLFormElement>(null);
+  const confirm = useConfirm();
 
   return (
-    <form action={action}>
+    <form action={action} ref={form}>
       <input type="hidden" name="file_id" value={fileId} />
+      {/*
+        Asked before it happens.
+
+        The file goes from storage as well as from the list, so there is
+        nothing to restore it from — and it may be the only copy of something
+        a client sent by email months ago.
+      */}
       <button
-        type="submit"
+        type="button"
+        onClick={async () => {
+          const yes = await confirm({
+            title: `Remove ${name}?`,
+            body: "The file is deleted from storage and cannot be brought back. If it came from the client, ask them for it again.",
+            confirmLabel: "Remove it",
+            tone: "danger",
+          });
+          if (yes) form.current?.requestSubmit();
+        }}
         disabled={pending}
         aria-label={`Remove ${name}`}
         className="rounded-lg p-2 text-text-subtle transition-colors hover:bg-surface-2 hover:text-danger disabled:opacity-50"

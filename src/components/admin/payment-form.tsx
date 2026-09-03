@@ -7,6 +7,7 @@ import { Field, FIELD } from "@/components/ui/field";
 import { recordPayment } from "@/lib/actions/projects";
 import { idleState } from "@/lib/actions/state";
 import { cn } from "@/lib/utils";
+import { useBusyWhile } from "@/components/forms/use-busy-while";
 
 /**
  * Money in.
@@ -21,6 +22,7 @@ import { cn } from "@/lib/utils";
  */
 export function PaymentForm({ projectId }: { projectId: string }) {
   const [state, action, pending] = useActionState(recordPayment, idleState);
+  useBusyWhile(pending, "Working");
   const form = useRef<HTMLFormElement>(null);
 
   useEffect(() => {

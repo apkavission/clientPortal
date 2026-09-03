@@ -159,7 +159,7 @@ export async function inviteContact(
   const result = await buildAccountEmail({
     name: parsed.data.full_name,
     email: parsed.data.email,
-    password: password ?? "(the password you already use)",
+    password,
     projectName: client.company_name ?? client.name,
     trackerUrl: process.env.NEXT_PUBLIC_TRACKER_URL ?? "http://localhost:3200",
     role: "client",

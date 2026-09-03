@@ -8,6 +8,7 @@ import { FIELD } from "@/components/ui/field";
 import { sendProjectMessage } from "@/lib/actions/project-chat";
 import { idleState } from "@/lib/actions/state";
 import { cn, formatDate } from "@/lib/utils";
+import { useBusyWhile } from "@/components/forms/use-busy-while";
 
 export interface ProjectMessage {
   id: string;
@@ -47,6 +48,7 @@ export function ProjectChat({
   canWriteInternal: boolean;
 }) {
   const [state, action, pending] = useActionState(sendProjectMessage, idleState);
+  useBusyWhile(pending, "Sending project message");
   const form = useRef<HTMLFormElement>(null);
 
   useEffect(() => {

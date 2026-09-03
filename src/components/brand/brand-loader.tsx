@@ -192,7 +192,7 @@ export function BrandSymbol({ className }: { className?: string }) {
  * lands; it comes from the file's own 1246 x 764.
  */
 export function BrandMark({
-  height = 30,
+  height = 44,
   className,
 }: {
   height?: number;

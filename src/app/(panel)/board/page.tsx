@@ -5,7 +5,7 @@ import { MoveTask } from "@/components/admin/move-task";
 import { requireMenu } from "@/lib/auth/session";
 import { BOARD_COLUMNS, TASK_PRIORITY_LABEL, TASK_STATUS_LABEL, TASK_TONE } from "@/lib/labels";
 import { getMyTasks, getUnassignedTasks, type BoardTask } from "@/lib/queries/admin";
-import { formatDate } from "@/lib/utils";
+import { cn, formatDate } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "My board" };
 
@@ -28,24 +28,66 @@ export default async function BoardPage() {
     getUnassignedTasks(),
   ]);
 
+  /* Past its due date and not finished. Compared as `yyyy-mm-dd` strings, which
+     is what the column holds — parsing them to Date only to compare would drag
+     the reader's timezone into a question that has nothing to do with it. */
+  const todayIso = new Date().toISOString().slice(0, 10);
+  const overdue = mine.filter(
+    (task) => task.status !== "done" && task.due_date && task.due_date < todayIso,
+  ).length;
+
   return (
     <div className="mx-auto w-full max-w-7xl">
       <header>
         <h1 className="text-2xl font-semibold">My board</h1>
         <p className="measure mt-2 text-sm leading-relaxed text-text-muted">
-          Everything assigned to you. Moving a task moves the client&rsquo;s
-          percentage with it — that figure is worked out from these rows and is
-          not typed anywhere.
+          Everything assigned to you, across every project, in the order work
+          moves: to do, then in progress, in review, blocked, done. Move a card
+          with the control at the bottom of it — and moving one moves the
+          client&rsquo;s percentage with it, because that figure is worked out
+          from these rows rather than typed anywhere.
         </p>
       </header>
 
-      {mine.length === 0 ? (
-        <p className="mt-10 rounded-2xl border border-dashed border-border bg-surface-2/40 p-8 text-sm leading-relaxed text-text-muted">
-          Nothing is assigned to you. Anything waiting for somebody to pick it up
-          is below.
+      {/*
+        What is actually on this person's plate, in one line.
+
+        The columns say where everything is; they do not say what needs a
+        decision today. Blocked and overdue are the two that do, so they are
+        counted here rather than left to be spotted by reading five columns.
+      */}
+      <dl className="mt-6 flex flex-wrap gap-x-8 gap-y-2">
+        <Tally label="Assigned to you" value={mine.length} />
+        <Tally
+          label="In progress"
+          value={mine.filter((task) => task.status === "in_progress").length}
+        />
+        <Tally
+          label="Blocked"
+          value={mine.filter((task) => task.status === "blocked").length}
+          urgent
+        />
+        <Tally label="Overdue" value={overdue} urgent />
+        <Tally label="Waiting for somebody" value={unassigned.length} />
+      </dl>
+
+      {/*
+        The columns are drawn even when every one of them is empty.
+
+        They used to be replaced by a single sentence saying nothing was
+        assigned, which meant the one person most likely to be new to this
+        screen — somebody with no work yet — was the only person who never saw
+        what it does. The empty board explains itself; a paragraph where the
+        board should be does not.
+      */}
+      {mine.length === 0 && (
+        <p className="mt-8 rounded-xl border border-dashed border-border bg-surface-2/40 p-4 text-sm text-text-muted">
+          Nothing is assigned to you yet. Anything waiting for somebody to pick
+          it up is at the bottom of this page.
         </p>
-      ) : (
-        <div className="mt-10 grid gap-6 lg:grid-cols-3 xl:grid-cols-5">
+      )}
+
+      <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
           {BOARD_COLUMNS.map((column) => {
             const inColumn = mine.filter((task) => task.status === column);
 
@@ -58,16 +100,23 @@ export default async function BoardPage() {
                   </span>
                 </h2>
 
-                <ul className="mt-3 space-y-3">
-                  {inColumn.map((task) => (
-                    <TaskCard key={task.id} task={task} />
-                  ))}
-                </ul>
+                {/* An empty column says so rather than being a blank gap. The
+                    shape of the board is the explanation of it. */}
+                {inColumn.length === 0 ? (
+                  <p className="mt-3 rounded-xl border border-dashed border-border px-3 py-6 text-center text-xs text-text-subtle">
+                    Nothing here
+                  </p>
+                ) : (
+                  <ul className="mt-3 space-y-3">
+                    {inColumn.map((task) => (
+                      <TaskCard key={task.id} task={task} />
+                    ))}
+                  </ul>
+                )}
               </section>
             );
           })}
-        </div>
-      )}
+      </div>
 
       <section className="mt-16">
         <h2 className="text-base font-semibold">Waiting for somebody</h2>
@@ -85,6 +134,37 @@ export default async function BoardPage() {
           </ul>
         )}
       </section>
+    </div>
+  );
+}
+
+/**
+ * One figure from the line at the top.
+ *
+ * `urgent` colours a count that is not zero. Zero is never coloured — a board
+ * with nothing blocked should look calm, and a red 0 trains people to ignore
+ * red.
+ */
+function Tally({
+  label,
+  value,
+  urgent,
+}: {
+  label: string;
+  value: number;
+  urgent?: boolean;
+}) {
+  return (
+    <div>
+      <dt className="text-xs text-text-subtle">{label}</dt>
+      <dd
+        className={cn(
+          "mt-0.5 text-lg font-semibold tabular-nums",
+          urgent && value > 0 ? "text-danger" : "text-text",
+        )}
+      >
+        {value}
+      </dd>
     </div>
   );
 }

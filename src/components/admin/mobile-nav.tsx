@@ -44,7 +44,7 @@ export function MobileNav({ groups }: { groups: NavGroup[] }) {
               if (event.key === "Escape") setOpen(false);
             }}
           >
-            <div className="flex h-16 items-center justify-end border-b border-border px-4">
+            <div className="flex h-24 items-center justify-end border-b border-border px-4">
               <button
                 type="button"
                 onClick={() => setOpen(false)}

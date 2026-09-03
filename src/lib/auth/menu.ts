@@ -1,5 +1,4 @@
 import { NAV, navItem, NAV_ITEMS, type MenuKey, type NavGroup, type NavItem } from "@/lib/nav";
-import type { StaffRole } from "@/types/database";
 
 /**
  * What one person may reach, resolved.
@@ -18,51 +17,54 @@ import type { StaffRole } from "@/types/database";
  * regardless of both. Three layers, and the sidebar is the weakest by design.
  */
 
-/** The screens a role reaches before anything is said about the person. */
-const ROLE_MENU: Record<StaffRole, MenuKey[]> = {
-  // Everything, including the screen that hands out everything.
-  owner: ["dashboard", "board", "clients", "projects", "requests", "team"],
-  manager: ["dashboard", "board", "clients", "projects", "requests", "team"],
-
-  /*
-    Everything except the team screen.
-
-    An admin can run the work — clients, projects, the queue — and cannot change
-    who else can. That is the line worth drawing: access to the work does not
-    imply access to who has access.
-  */
-  developer: ["dashboard", "board", "projects", "requests"],
-  designer: ["dashboard", "board", "projects"],
-  qa: ["dashboard", "board", "projects"],
-};
-
+/**
+ * What one person may reach: the role's screens, plus and minus their own.
+ *
+ * `portal.staff` carried the role twice — the superseded enum and the key into
+ * the master list. 20260830000014 added the key and called it the one that
+ * counts, then left this file and `session.ts` still reading the enum, so the
+ * transition was half done and load-bearing in the half that had supposedly
+ * stopped mattering. Neither is read here now: the resolved default arrives
+ * already looked up, from the master list.
+ */
 export interface MenuSubject {
-  role: StaffRole;
+  /**
+   * The role's own screens, from `company.roles.portal_menu` through the
+   * `roles_master` view — not a map in this repository.
+   *
+   * It was a `Record` here: six roles and their screens, in TypeScript. That
+   * was fine while this application managed its own team. It stopped being
+   * fine when the company admin took that over, because a per-person grant is
+   * stored as a difference from the role's default and a screen over there
+   * cannot subtract from a default it cannot see. Either that map got copied
+   * into the website — a second list, kept in step by remembering to, which is
+   * the thing this whole change removes — or it moved somewhere both can read.
+   *
+   * Empty is a real answer and the safe one: a role renamed or deleted in the
+   * website leaves somebody reaching nothing, rather than reaching everything.
+   */
+  role_menu: string[] | null;
   menu_extra?: string[] | null;
   menu_denied?: string[] | null;
 }
 
-export function defaultMenuFor(role: StaffRole): MenuKey[] {
-  return (ROLE_MENU[role] ?? [])
+export function defaultMenuFor(roleMenu: string[] | null): MenuKey[] {
+  return (roleMenu ?? [])
     .map((key) => navItem(key))
     .filter((item): item is NavItem => item !== undefined)
-    .filter((item) => !item.ownerOnly || role === "owner" || role === "manager")
     .map((item) => item.key);
 }
 
 /**
- * Can this screen be handed to one named person?
+ * Every screen that can be handed to one named person, in menu order.
  *
- * `team` is refused always — it is what being an owner means rather than an
- * extra to be given out, and the policies on `portal.staff` would refuse every
- * action on it anyway.
+ * All of them, now. This was filtered by `ownerOnly`, which marked exactly one
+ * item — the Team screen — because handing somebody the screen that hands out
+ * screens is not a grant. That screen is gone: staff are managed in the
+ * company website's admin, and this application no longer has a way to raise
+ * anybody's authority from inside itself.
  */
-export function isGrantable(item: NavItem): boolean {
-  return !item.ownerOnly;
-}
-
-/** Every screen an owner may hand out or take away, in menu order. */
-export const GRANTABLE_ITEMS: NavItem[] = NAV_ITEMS.filter(isGrantable);
+export const GRANTABLE_ITEMS: NavItem[] = NAV_ITEMS;
 
 /**
  * The screens this person may reach.
@@ -75,13 +77,11 @@ export const GRANTABLE_ITEMS: NavItem[] = NAV_ITEMS.filter(isGrantable);
  * permission.
  */
 export function resolveMenu(person: MenuSubject): Set<MenuKey> {
-  const menu = new Set<MenuKey>(defaultMenuFor(person.role));
+  const menu = new Set<MenuKey>(defaultMenuFor(person.role_menu));
 
   for (const key of person.menu_extra ?? []) {
     const item = navItem(key);
-    // `ownerOnly` is enforced here as well as in the form that writes it: a row
-    // edited straight into the database is still a row this code reads.
-    if (item && isGrantable(item)) menu.add(item.key);
+    if (item) menu.add(item.key);
   }
 
   for (const key of person.menu_denied ?? []) {
@@ -117,11 +117,11 @@ export function navFor(person: MenuSubject): NavGroup[] {
  * screen when the page loaded.
  */
 export function menuOverrides(
-  role: StaffRole,
+  roleMenu: string[] | null,
   wanted: string[],
 ): { menu_extra: string[]; menu_denied: string[] } {
   const chosen = new Set(wanted);
-  const byDefault = new Set(defaultMenuFor(role));
+  const byDefault = new Set(defaultMenuFor(roleMenu));
 
   const extra: string[] = [];
   const denied: string[] = [];
@@ -135,4 +135,30 @@ export function menuOverrides(
   }
 
   return { menu_extra: extra, menu_denied: denied };
+}
+
+/**
+ * What a role is called, for a header that has to say it in one word.
+ *
+ * A small map rather than a lookup in `company.roles`, where the labels are
+ * actually edited. Reading the master list would mean a cross-schema query on
+ * every page render to render one subtitle, and the dependency this panel
+ * takes on that table is deliberately one column of one row.
+ *
+ * An unknown key is printed rather than hidden — a person whose role was
+ * renamed should see something true and slightly odd, not a blank space that
+ * says nothing about why their menu changed.
+ */
+const ROLE_LABEL: Record<string, string> = {
+  super_admin: "Super admin",
+  admin: "Admin",
+  manager: "Manager",
+  developer: "Developer",
+  designer: "Designer",
+  qa: "QA",
+};
+
+export function roleLabel(roleKey: string | null): string {
+  if (!roleKey) return "No role";
+  return ROLE_LABEL[roleKey] ?? roleKey.replace(/_/g, " ");
 }

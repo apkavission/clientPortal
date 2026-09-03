@@ -33,8 +33,14 @@ export default async function DashboardPage() {
   const staff = session.staff;
 
   const [projects, requests, myTasks] = await Promise.all([
-    canReach(staff, "projects") ? getProjects() : Promise.resolve([]),
-    canReach(staff, "requests") ? getOpenRequests() : Promise.resolve([]),
+    /* The dashboard summarises everything, so the whole list. */
+    canReach(staff, "projects")
+      ? getProjects().then((result) => result.rows)
+      : Promise.resolve([]),
+    /* The dashboard counts them all, so the whole queue. */
+    canReach(staff, "requests")
+      ? getOpenRequests().then((result) => result.rows)
+      : Promise.resolve([]),
     getMyTasks(staff.id),
   ]);
 

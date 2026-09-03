@@ -1,13 +1,21 @@
 import "server-only";
 
 import nodemailer, { type Transporter } from "nodemailer";
-import {
-  actionButton,
-  detailRow,
-  escapeHtml,
-  logoAttachment,
-  renderEmail,
-} from "@/lib/email/layout";
+import { logoAttachment, renderEmail, type EmailBrand } from "@/lib/email/layout";
+
+/**
+ * Who these emails are from, in the footer.
+ *
+ * Stated once here rather than in each message. The company website reads the
+ * same fields out of its settings table; this application has none, so this
+ * constant is the one place an address changes.
+ */
+const BRAND: EmailBrand = {
+  companyName: "Apka Vission",
+  legalName: "Apka Saathi Private Limited",
+  email: "hello@apkavission.com",
+  siteUrl: "https://apkavission.com",
+};
 
 /**
  * Outbound mail, over our own SMTP.
@@ -119,7 +127,17 @@ export async function sendMail(message: MailMessage): Promise<MailResult> {
 export async function buildAccountEmail(input: {
   name: string;
   email: string;
-  password: string;
+  /**
+   * A new password, or `null` when this person already has an account.
+   *
+   * `null` rather than a sentence. The callers used to pass the literal string
+   * "(the password you already use)", which read correctly in the row and then
+   * ran straight into the note beneath it — so an existing client was told
+   * their password was temporary and to change it. A type that can express
+   * "there is no new password" is what lets this message say the right thing
+   * instead of being handed a phrase and printing it.
+   */
+  password: string | null;
   projectName: string;
   trackerUrl: string;
   role: "client" | "developer";
@@ -132,6 +150,26 @@ export async function buildAccountEmail(input: {
   const heading =
     input.role === "client" ? "Your project is set up" : "You are on a new project";
 
+  /*
+    Whether this message is handing over a password or naming an existing one.
+
+    Both are ordinary: a client's second project, or a developer added to
+    another one, already has a login. Getting this wrong is not cosmetic — the
+    note underneath used to say "that password is temporary, please change it"
+    in both cases, so somebody who had been signing in for months was told to
+    change a password that had just been described to them as the one they
+    already use.
+  */
+  const isNew = input.password !== null;
+
+  const passwordLine = isNew
+    ? `Password: ${input.password}`
+    : "Password: the one you already use for this account.";
+
+  const passwordNote = isNew
+    ? "That password is temporary. Please sign in and change it — there is a link for it on your account page."
+    : "Your password has not changed. If you have forgotten it, there is a reset link on the sign-in screen.";
+
   const text = [
     `Hello ${input.name},`,
     "",
@@ -140,27 +178,12 @@ export async function buildAccountEmail(input: {
     `You can follow it here: ${input.trackerUrl}`,
     "",
     `Email:    ${input.email}`,
-    `Password: ${input.password}`,
+    passwordLine,
     "",
-    "That password is temporary. Please sign in and change it — there is a link for it on your account page.",
+    passwordNote,
     "",
     "Apka Saathi Private Limited",
   ].join("\n");
-
-  const body = `
-    <p style="margin:20px 0 0;font:400 15px/1.6 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#0b1220">${escapeHtml(opening)}</p>
-
-    <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:20px 0 0;width:100%">
-      ${detailRow("Email", input.email)}
-      ${detailRow("Password", input.password)}
-    </table>
-
-    <p style="margin:16px 0 0;font:400 13px/1.6 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#667085">
-      That password is temporary. Please sign in and change it — there is a link for it on your account page.
-    </p>
-
-    ${actionButton(input.trackerUrl, "Open the tracker")}
-  `;
 
   return {
     to: input.email,
@@ -172,8 +195,36 @@ export async function buildAccountEmail(input: {
     html: renderEmail({
       preheader: opening,
       heading,
-      intro: `Hello ${input.name},`,
-      body,
+      intro: `Hello ${input.name}. ${opening}`,
+
+      /*
+        The button before the credentials, deliberately.
+
+        Somebody reading an email that contains a password decides whether it is
+        genuine in the first two seconds. What happened and where to go answers
+        that; a password quoted at them before either does not.
+      */
+      button: { label: "Open the tracker", href: input.trackerUrl },
+
+      /*
+        `rows`, rather than the hand-built two-column table this used to be.
+
+        That table was the half of this message that was not responsive: two
+        hard columns squeezed the password to a few characters wide on a phone —
+        the one value here that has to be readable and copyable. The shared
+        frame stacks the label above the value below 480px, which is what its
+        `.stack` rule exists for.
+      */
+      rows: [
+        ["Email", input.email],
+        [
+          "Password",
+          isNew ? (input.password as string) : "the one you already use for this account",
+        ],
+      ],
+
+      note: passwordNote,
+      brand: BRAND,
     }),
     attachments: [await logoAttachment()],
   };

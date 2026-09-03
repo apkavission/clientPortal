@@ -14,9 +14,9 @@ import { createClient } from "@supabase/supabase-js";
 import { readFileSync } from "node:fs";
 
 const config = Object.fromEntries(
-  readFileSync("c:/Users/kumar/portal/.env.local", "utf8")
+  readFileSync(new URL("../.env.local", import.meta.url), "utf8")
     .split(/\r?\n/)
-    .map((line) => /^([A-Z_]+)=(.*)$/.exec(line.trim()))
+    .map((line) => /^([A-Z0-9_]+)=(.*)$/.exec(line.trim()))
     .filter(Boolean)
     .map((m) => [m[1], m[2].replace(/^"|"$/g, "")]),
 );

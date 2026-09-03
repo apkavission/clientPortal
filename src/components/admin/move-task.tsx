@@ -9,6 +9,7 @@ import { idleState } from "@/lib/actions/state";
 import { BOARD_COLUMNS, TASK_STATUS_LABEL } from "@/lib/labels";
 import { cn } from "@/lib/utils";
 import type { TaskStatus } from "@/types/database";
+import { useBusyWhile } from "@/components/forms/use-busy-while";
 
 /**
  * Move one task, from wherever it is shown.
@@ -24,6 +25,7 @@ import type { TaskStatus } from "@/types/database";
  */
 export function MoveTask({ taskId, status }: { taskId: string; status: TaskStatus }) {
   const [state, action, pending] = useActionState(moveTask, idleState);
+  useBusyWhile(pending, "Working");
   const [chosen, setChosen] = useState<TaskStatus>(status);
 
   return (

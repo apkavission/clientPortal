@@ -13,7 +13,8 @@
     "format": "prettier --write .",
     "check:schema": "node scripts/check-schema.mjs",
     "check:policies": "node scripts/check-policies.mjs",
-    "gen:types": "node scripts/gen-types.mjs"
+    "gen:types": "node scripts/gen-types.mjs",
+    "check:routes": "node scripts/check-routes.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.5",

@@ -25,7 +25,7 @@ export default async function LoginPage({ searchParams }: Props) {
     <main className="container-page flex min-h-dvh flex-col items-center justify-center py-16">
       <div className="w-full max-w-sm">
         <div className="flex justify-center">
-          <BrandMark height={56} />
+          <BrandMark height={128} />
         </div>
 
         <div className="mt-8 rounded-2xl border border-border bg-surface p-6 shadow-[var(--shadow-2)] sm:p-8">

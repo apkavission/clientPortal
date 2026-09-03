@@ -5,6 +5,7 @@ import { BrandSpinner } from "@/components/brand/brand-loader";
 import { Button } from "@/components/ui/button";
 import { deleteClientRecord } from "@/lib/actions/clients";
 import { idleState } from "@/lib/actions/state";
+import { useBusyWhile } from "@/components/forms/use-busy-while";
 
 /**
  * Remove a client.
@@ -21,6 +22,7 @@ import { idleState } from "@/lib/actions/state";
  */
 export function DeleteClient({ id, name }: { id: string; name: string }) {
   const [state, action, pending] = useActionState(deleteClientRecord, idleState);
+  useBusyWhile(pending, "Removing client record");
   const [asking, setAsking] = useState(false);
 
   if (!asking) {

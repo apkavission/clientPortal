@@ -3,10 +3,11 @@
 import { useActionState, useState } from "react";
 import { BrandSpinner } from "@/components/brand/brand-loader";
 import { Button } from "@/components/ui/button";
-import { Field, FIELD } from "@/components/ui/field";
+import { Field, FIELD, LABEL } from "@/components/ui/field";
 import { convertRequest, triageRequest } from "@/lib/actions/requests";
 import { idleState, type ActionState } from "@/lib/actions/state";
 import { cn } from "@/lib/utils";
+import { useBusyWhile } from "@/components/forms/use-busy-while";
 
 /**
  * Answer one request: turn it into work, or reply without building it.
@@ -65,6 +66,7 @@ function ConvertForm({
   onCancel: () => void;
 }) {
   const [state, action, pending] = useActionState(convertRequest, idleState);
+  useBusyWhile(pending, "Working");
 
   return (
     <form action={action} className="mt-5 space-y-4 border-t border-border pt-5">
@@ -105,6 +107,37 @@ function ConvertForm({
         )}
       </Field>
 
+      {/*
+        What it costs, and anything else this one request needs recorded.
+
+        Under the scope-change tick on purpose: the tick is what says the
+        conversation about price is happening now, and the price belongs next
+        to it rather than three screens away in an invoice nobody has raised
+        yet.
+      */}
+      <Field
+        label="What it costs"
+        hint="Leave blank if nobody has priced it. Zero is a real answer and means we are not charging."
+        error={state.fieldErrors?.quoted_amount}
+      >
+        {(id, describedBy) => (
+          <input
+            id={id}
+            name="quoted_amount"
+            type="number"
+            min={0}
+            step="0.01"
+            inputMode="decimal"
+            placeholder="Not priced"
+            aria-describedby={describedBy}
+            aria-invalid={state.fieldErrors?.quoted_amount ? true : undefined}
+            className={cn(FIELD, "max-w-48")}
+          />
+        )}
+      </Field>
+
+      <ExtraFields />
+
       <Message state={state} />
 
       <div className="flex flex-wrap gap-3">
@@ -128,6 +161,7 @@ function ConvertForm({
 
 function ReplyForm({ requestId, onCancel }: { requestId: string; onCancel: () => void }) {
   const [state, action, pending] = useActionState(triageRequest, idleState);
+  useBusyWhile(pending, "Working");
 
   return (
     <form action={action} className="mt-5 space-y-4 border-t border-border pt-5">
@@ -210,5 +244,60 @@ function Message({ state }: { state: ActionState }) {
     >
       {state.message}
     </p>
+  );
+}
+
+/**
+ * Anything else worth recording about this one request.
+ *
+ * ---------------------------------------------------------------------------
+ * **Rows, not a settings screen.** What was asked for was somewhere to put the
+ * thing *this* request needs — a purchase order number, a date somebody agreed
+ * on the phone, which of the client's people signed it off. Defining a field
+ * once and having it appear on every request is a different feature, and the
+ * wrong one here: most of these are wanted once and never again.
+ *
+ * A row with no label is dropped rather than saved under an empty key. An
+ * unnamed value is not a field, and storing it would leave `"": "12000"` in
+ * the record for somebody to puzzle over later.
+ */
+function ExtraFields() {
+  const [rows, setRows] = useState(1);
+
+  return (
+    <fieldset>
+      <legend className={LABEL}>Anything else worth recording</legend>
+      <p className="mt-1 text-xs text-text-subtle">
+        Optional. A name and a value — a purchase order number, a date agreed on
+        a call, who signed it off.
+      </p>
+
+      <div className="mt-2 space-y-2">
+        {Array.from({ length: rows }, (_, index) => (
+          <div key={index} className="flex flex-wrap gap-2">
+            <input
+              name="extra_label"
+              placeholder="Name"
+              maxLength={60}
+              className={cn(FIELD, "min-w-0 flex-1")}
+            />
+            <input
+              name="extra_value"
+              placeholder="Value"
+              maxLength={300}
+              className={cn(FIELD, "min-w-0 flex-[2]")}
+            />
+          </div>
+        ))}
+      </div>
+
+      <button
+        type="button"
+        onClick={() => setRows((current) => current + 1)}
+        className="mt-2 text-sm text-accent underline underline-offset-4"
+      >
+        Add another
+      </button>
+    </fieldset>
   );
 }

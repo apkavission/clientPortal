@@ -28,7 +28,7 @@ import { randomBytes } from "node:crypto";
 import { appendFileSync, readFileSync, writeFileSync, existsSync } from "node:fs";
 
 for (const line of readFileSync(".env.local", "utf8").split("\n")) {
-  const match = /^([A-Z_]+)=(.*)$/.exec(line.trim());
+  const match = /^([A-Z0-9_]+)=(.*)$/.exec(line.trim());
   if (match) process.env[match[1]] = match[2].replace(/^["']|["']$/g, "");
 }
 

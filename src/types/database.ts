@@ -45,6 +45,14 @@ export type TaskStatus =
   | "in_progress"
   | "in_review"
   | "blocked"
+  /**
+   * Work that came back wrong.
+   *
+   * Not blocked — nothing is stopping it — and not in review, because it has
+   * been reviewed. Without a column of its own it went back to "in progress"
+   * and the fact that it had already failed once was lost.
+   */
+  | "needs_changes"
   | "done"
   | "cancelled";
 
@@ -170,6 +178,15 @@ export type ClientProjectRow = Timestamps & {
      has been paid is the sum of `payments` and is never a column here. */
   discount_amount: number;
   estimated_weeks: number | null;
+
+  /**
+   * Which of our services this project is, as slugs from `company.services`.
+   *
+   * Empty is a real answer for a project agreed before this existed, and it is
+   * shown as "not recorded" rather than as "none" — the two mean very
+   * different things to whoever reads it next.
+   */
+  service_keys: string[];
 
   /* Approval, and what it started. */
   /* Changes, and delivery. Added by 20260830000018_changes_and_conversation.sql.
@@ -304,6 +321,24 @@ export type ClientRequestRow = Timestamps & {
   is_urgent: boolean;
   urgency_reason: string | null;
 
+  /**
+   * What this change was priced at.
+   *
+   * Null and zero are different answers and both are real: null is "nobody has
+   * priced it", zero is "priced, and we are not charging". A screen showing
+   * both as ₹0 would turn the first into a promise.
+   */
+  quoted_amount: number | null;
+
+  /**
+   * Ad-hoc fields for this one request, as a flat object of label to value.
+   *
+   * `jsonb` rather than a table of field definitions, because what was asked
+   * for was somewhere to put the one thing *this* request needs recorded. A
+   * key that starts appearing on every row has earned a column.
+   */
+  extra: Json;
+
   /* Approval — the moment somebody decided this becomes work. Until it is set,
      no developer can see the request at all: the row policy, not a screen. */
   approved_at: string | null;
@@ -403,6 +438,119 @@ export type TaskTransferRow = {
   created_at: string;
 };
 
+/**
+ * One service from the company's catalogue, as this application sees it.
+ *
+ * `portal.services_master` is a read-only view onto `company.services`, edited
+ * in the company website's admin and already the list a client reads on the
+ * public site. A project stores slugs from it, so "is this a website, or a
+ * website with SEO and marketing" is answered by the project rather than
+ * inferred from its name.
+ */
+export type ServiceMasterRow = {
+  slug: string;
+  name: string;
+  short_name: string | null;
+  summary: string;
+  sort_order: number;
+  /** Published in the catalogue, so worth offering as a choice. */
+  is_offered: boolean;
+};
+
+/**
+ * The master roles, as this application sees them.
+ *
+ * `portal.roles_master` is a read-only view onto `company.roles`, edited in the
+ * company website's admin. Declared here because the session resolves a staff
+ * member's role through it — the label to show, whether they administer the
+ * estate, and `portal_menu`: the screens the role reaches in this panel.
+ *
+ * That last column is the one that stopped this application carrying its own
+ * map of role-to-screens. Every field is nullable in the view because a view's
+ * columns always are, and the session treats a missing role as no access.
+ */
+export type RolesMasterRow = {
+  key: string;
+  label: string;
+  description: string | null;
+  is_owner: boolean;
+  is_staff: boolean;
+  is_active: boolean;
+  sort_order: number;
+  portal_menu: string[] | null;
+};
+
+/**
+ * A kind of document, as a row rather than as an enum.
+ *
+ * Master data, like the roles and leave types beside it. Adding a purchase
+ * order or an NDA is an admin writing a row, not a migration — and the rules
+ * for each kind travel with it, so a new one enforces its own requirements the
+ * moment it exists.
+ */
+export type DocumentTypeRow = {
+  key: string;
+  label: string;
+  /** 'staff', 'client' or 'both' — who a document of this kind belongs to. */
+  belongs_to: string;
+  needs_period: boolean;
+  needs_amount: boolean;
+  signs_by_default: boolean;
+  sort_order: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+/**
+ * Offer letters, salary slips, invoices and contracts.
+ *
+ * One row type because they are one noun. What differs is who may see one, and
+ * that is decided by the owner columns rather than by the kind — deliberately
+ * stricter than `payments` next door, which any member of staff may read.
+ */
+export type DocumentRow = {
+  id: string;
+  /** A key in `document_types`. Never compared to a literal in a page. */
+  kind_key: string;
+  title: string;
+  /** Exactly one of these two. A staff document, or a client's. */
+  staff_id: string | null;
+  client_id: string | null;
+  project_id: string | null;
+  /** The client payment that settled this — money coming in. */
+  payment_id: string | null;
+  amount: string | null;
+  period_start: string | null;
+  period_end: string | null;
+  issued_on: string;
+  /** When this was paid, for money going out. Never set with `payment_id`. */
+  paid_on: string | null;
+  paid_method: string | null;
+  storage_key: string | null;
+  filename: string | null;
+  mime_type: string | null;
+  /** Waiting on signatures. Whether it *is* signed is counted, not stored. */
+  needs_signature: boolean;
+  note: string | null;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type DocumentSignatureRow = {
+  id: string;
+  document_id: string;
+  /** 'company' is Apka Vission signing; 'client' is the other side. */
+  party: "company" | "client";
+  staff_id: string | null;
+  client_user_id: string | null;
+  /** The name as typed. Outlives the account that typed it. */
+  signed_name: string;
+  signature_image: string | null;
+  signed_at: string;
+};
+
 /** A table as Supabase's client wants it: what comes out, goes in, and changes. */
 type Table<Row, Required extends keyof Row = never> = {
   Row: Row;
@@ -425,14 +573,58 @@ export type Database = {
       approvals: Table<ApprovalRow, "project_id" | "title">;
       tasks: Table<TaskRow, "project_id" | "title">;
       task_comments: Table<TaskCommentRow, "task_id" | "body">;
+      task_assignees: Table<
+        {
+          task_id: string;
+          staff_id: string;
+          assigned_by: string | null;
+          /** Kept as a name too, so the admin view reads correctly after
+              somebody leaves. */
+          assigned_by_name: string | null;
+          assigned_at: string;
+        },
+        "task_id" | "staff_id"
+      >;
+
+      /**
+       * How a task got where it is.
+       *
+       * The board's memory: without it, "why is this blocked" has no answer a
+       * week later. Insert-only — a record of what happened that can be edited
+       * afterwards is not a record of what happened.
+       */
+      task_events: Table<
+        {
+          id: string;
+          task_id: string;
+          from_status: TaskStatus | null;
+          to_status: TaskStatus;
+          moved_by: string | null;
+          moved_by_name: string;
+          handed_to: string | null;
+          handed_to_name: string | null;
+          reason: string | null;
+          created_at: string;
+        },
+        "task_id" | "to_status" | "moved_by_name"
+      >;
+
       client_requests: Table<ClientRequestRow, "project_id" | "title">;
       request_messages: Table<RequestMessageRow, "request_id" | "author_name" | "body">;
       project_messages: Table<ProjectMessageRow, "project_id" | "author_name" | "body">;
       task_transfers: Table<TaskTransferRow, "task_id" | "from_staff_id" | "to_staff_id" | "reason">;
       project_files: Table<ProjectFileRow, "project_id" | "filename" | "storage_key">;
       activity_log: Table<ActivityLogRow, "project_id" | "action" | "entity" | "summary">;
+      roles_master: Table<RolesMasterRow, "key" | "label">;
+      services_master: Table<ServiceMasterRow, "slug" | "name">;
       payments: Table<PaymentRow, "project_id" | "amount">;
       time_entries: Table<TimeEntryRow, "task_id" | "staff_id" | "minutes">;
+      document_types: Table<DocumentTypeRow, "key" | "label">;
+      documents: Table<DocumentRow, "kind_key" | "title">;
+      document_signatures: Table<
+        DocumentSignatureRow,
+        "document_id" | "party" | "signed_name"
+      >;
     };
     Views: Record<never, never>;
     Functions: Record<never, never>;

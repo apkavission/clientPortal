@@ -23,22 +23,13 @@ export type MenuKey =
   | "clients"
   | "projects"
   | "board"
-  | "requests"
-  | "team";
+  | "requests";
 
 export interface NavItem {
   key: MenuKey;
   label: string;
   href: string;
   icon: string;
-  /**
-   * Screens only an owner or manager may open, and which cannot be handed out.
-   *
-   * `team` is one: giving somebody the team screen is giving them every other
-   * screen, because they could raise their own role and take the rest. That is
-   * not a grant, it is what being an owner means.
-   */
-  ownerOnly?: boolean;
 }
 
 export interface NavGroup {
@@ -62,12 +53,16 @@ export const NAV: NavGroup[] = [
       { key: "requests", label: "Requests", href: "/requests", icon: "inbox" },
     ],
   },
-  {
-    label: "Company",
-    items: [
-      { key: "team", label: "Team", href: "/team", icon: "users", ownerOnly: true },
-    ],
-  },
+  /*
+    There was a "Company" group here, holding the Team screen.
+
+    Staff are managed in the company website's admin now — one list of people
+    instead of two kept in step by remembering to, which is what the comment on
+    `portal.staff` warned about from the day it was written. The screen that
+    handed out access from here is gone with it, and so is `ownerOnly`: it
+    existed to mark exactly one item, and marking none is a rule that no longer
+    needs stating.
+  */
 ];
 
 /** Every item, flattened, in the order they appear on screen. */

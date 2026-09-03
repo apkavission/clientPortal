@@ -18,17 +18,43 @@
 import { createClient } from "@supabase/supabase-js";
 import { readFileSync } from "node:fs";
 
-function env(path) {
-  const out = {};
-  for (const line of readFileSync(path, "utf8").split(/\r?\n/)) {
-    const match = /^([A-Z_]+)=(.*)$/.exec(line.trim());
-    if (match) out[match[1]] = match[2].replace(/^"|"$/g, "");
+/**
+ * The first of these files that exists, resolved against this script.
+ *
+ * These paths were absolute — `c:/Users/kumar/portal/.env.local` — which
+ * worked on exactly one computer. On a second machine every check in here died
+ * on ENOENT before asking the database a single question, and the failure read
+ * like a broken script rather than a wrong path.
+ *
+ * `new URL(..., import.meta.url)` rather than a relative string, because a
+ * relative string resolves against the working directory: the same script
+ * would find the file when run from the project root and miss it when run from
+ * anywhere else.
+ */
+function env(...candidates) {
+  for (const path of candidates) {
+    try {
+      const out = {};
+      const text = readFileSync(new URL(path, import.meta.url), "utf8");
+      for (const line of text.split(/\r?\n/)) {
+        const match = /^([A-Z0-9_]+)=(.*)$/.exec(line.trim());
+        if (match) out[match[1]] = match[2].replace(/^"|"$/g, "");
+      }
+      return out;
+    } catch {
+      /* Try the next one. Absent is a normal state: not every machine has the
+         tracker checked out beside this. */
+    }
   }
-  return out;
+  return {};
 }
 
-const config = env("c:/Users/kumar/portal/.env.local");
-const secrets = env("c:/Users/kumar/tracker/.env.test.local");
+const config = env("../.env.local");
+const secrets = env(
+  "../.env.test.local",
+  "../../tracker/.env.test.local",
+  "../../taskTracker/.env.test.local",
+);
 
 const url = config.NEXT_PUBLIC_SUPABASE_URL;
 const anon = config.NEXT_PUBLIC_SUPABASE_ANON_KEY;

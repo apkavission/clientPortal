@@ -8,6 +8,7 @@ import { approveProject } from "@/lib/actions/projects";
 import { idleState } from "@/lib/actions/state";
 import { cn } from "@/lib/utils";
 import type { StaffRow } from "@/types/database";
+import { useBusyWhile } from "@/components/forms/use-busy-while";
 
 /**
  * The client said yes.
@@ -34,6 +35,7 @@ export function ApproveForm({
   staff: StaffRow[];
 }) {
   const [state, action, pending] = useActionState(approveProject, idleState);
+  useBusyWhile(pending, "Working");
   const [open, setOpen] = useState(false);
 
   if (state.status === "success") {

@@ -16,7 +16,8 @@ export default async function NewProjectPage({ searchParams }: Props) {
 
   const query = await searchParams;
   const preselected = typeof query.client === "string" ? query.client : null;
-  const clients = await getClients();
+  /* Every client, for a select rather than a page of them. */
+  const { rows: clients } = await getClients();
 
   return (
     <div className="mx-auto w-full max-w-2xl">

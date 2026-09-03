@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { BusyProvider } from "@/components/brand/busy-overlay";
 
 const sans = Geist({ variable: "--font-sans-loaded", subsets: ["latin"] });
 const mono = Geist_Mono({ variable: "--font-mono-loaded", subsets: ["latin"] });
@@ -65,7 +66,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
       </head>
-      <body className="flex min-h-full flex-col bg-bg text-text">{children}</body>
+      <body className="flex min-h-full flex-col bg-bg text-text"><BusyProvider>{children}</BusyProvider></body>
     </html>
   );
 }

@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { Pagination } from "@/components/admin/pagination";
+import { requestedPage, resolve } from "@/lib/pagination";
 import Link from "next/link";
 import { Badge } from "@/components/admin/badge";
 import { requireMenu } from "@/lib/auth/session";
@@ -20,10 +22,18 @@ export const metadata: Metadata = { title: "Requests" };
  * into work, say no with a reason, or say it is being looked at. There is no way
  * to leave one silently — the table refuses a decline with no note.
  */
-export default async function RequestsPage() {
+type Props = {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+};
+
+export default async function RequestsPage({ searchParams }: Props) {
   await requireMenu("requests");
 
-  const requests = await getOpenRequests();
+  const query = await searchParams;
+  const request = requestedPage(query);
+
+  const { rows: requests, total } = await getOpenRequests(request);
+  const paged = resolve(requests, total, request);
 
   return (
     <div className="mx-auto w-full max-w-4xl">
@@ -41,6 +51,7 @@ export default async function RequestsPage() {
           Nothing waiting. That is the state this page should usually be in.
         </p>
       ) : (
+        <>
         <ul className="mt-10 space-y-4">
           {requests.map((request) => (
             <li key={request.id} className="rounded-2xl border border-border bg-surface p-6">
@@ -96,6 +107,9 @@ export default async function RequestsPage() {
             </li>
           ))}
         </ul>
+
+        <Pagination paged={paged} pathname="/requests" query={query} />
+        </>
       )}
     </div>
   );

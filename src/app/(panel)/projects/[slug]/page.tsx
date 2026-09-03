@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft, FileText } from "lucide-react";
 import { ApproveForm } from "@/components/admin/approve-form";
 import { Badge } from "@/components/admin/badge";
+import { DocumentForm } from "@/components/admin/document-form";
 import { PaymentForm } from "@/components/admin/payment-form";
 import { ProgressBar } from "@/components/admin/progress-bar";
 import { ProjectChat } from "@/components/admin/project-chat";
@@ -13,7 +14,15 @@ import { ButtonLink } from "@/components/ui/button";
 import { requireMenu } from "@/lib/auth/session";
 import { HEALTH_LABEL, HEALTH_TONE, STAGE_LABEL, TASK_STATUS_LABEL, TASK_TONE } from "@/lib/labels";
 import { formatMoney } from "@/lib/money";
-import { getActiveStaff, getProjectDetail, getProjectMessages } from "@/lib/queries/admin";
+import {
+  getActiveStaff,
+  getClients,
+  getProjectDetail,
+  getProjectMemberIds,
+  getProjectMessages,
+  getServiceOptions,
+} from "@/lib/queries/admin";
+import { getClientDocumentKinds, getProjectDocuments } from "@/lib/queries/documents";
 import { formatDate } from "@/lib/utils";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -49,10 +58,33 @@ export default async function ProjectPage({ params }: Props) {
   if (!detail) notFound();
 
   const messages = await getProjectMessages(detail.project.id);
+  const services = await getServiceOptions();
+  /* Every client, for a select rather than a page of them. */
+  const { rows: clients } = await getClients();
+  const memberIds = await getProjectMemberIds(detail.project.id);
+
+  /* Issued to this client on this project. Read together — neither depends
+     on the other, and one after the other is two round trips for one card. */
+  const [documentKinds, documents] = await Promise.all([
+    getClientDocumentKinds(),
+    getProjectDocuments(detail.project.id),
+  ]);
 
   const { project, money, payments, tasks, requirements, requests, leadDeveloper, files } =
     detail;
-  const staff = project.approved_at ? [] : await getActiveStaff();
+  /*
+    Always fetched, not only before approval.
+
+    This was `project.approved_at ? [] : await getActiveStaff()`, because the
+    only thing that needed a staff list was the approval form — the one moment
+    a project was given a lead developer. After that the answer to "whose
+    project is this" was fixed for good, and the list it would have needed to
+    change was deliberately empty.
+
+    It has to be changeable: people leave, projects are handed over, and the
+    client's messages are meant to reach whoever actually holds it.
+  */
+  const staff = await getActiveStaff();
 
   const openRequests = requests.filter(
     (request) => request.status === "submitted" || request.status === "under_review",
@@ -196,7 +228,13 @@ export default async function ProjectPage({ params }: Props) {
 
       {/* 3 — everything, written down --------------------------------------- */}
       <div className="mt-10">
-        <ProjectForm project={project} />
+        <ProjectForm
+          project={project}
+          services={services}
+          staff={staff}
+          clients={clients}
+          memberIds={memberIds}
+        />
       </div>
 
       {/* 4 — the record ----------------------------------------------------- */}
@@ -225,6 +263,83 @@ export default async function ProjectPage({ params }: Props) {
         )}
 
         <PaymentForm projectId={project.id} />
+      </section>
+
+      {/*
+        Documents, beside the payments they are usually about.
+
+        An invoice and the payment that settles it are two halves of one
+        conversation, and putting them on separate screens means somebody
+        checking whether a client has paid has to hold one in their head while
+        they look at the other.
+
+        Every kind offered here comes from `document_types`. Nothing on this
+        page names one, so a purchase order added next month appears without a
+        deploy.
+      */}
+      <section className="mt-6 rounded-2xl border border-border bg-surface p-6">
+        <h2 className="text-base font-semibold">Documents</h2>
+        <p className="mt-1 text-sm text-text-muted">
+          Issued to {project.client?.name ?? "the client"}. They see these in the
+          tracker, and sign there.
+        </p>
+
+        {documents.length === 0 ? (
+          <p className="mt-3 text-sm text-text-muted">Nothing issued yet.</p>
+        ) : (
+          <ul className="mt-4 divide-y divide-border">
+            {documents.map((document) => {
+              const company = document.signedBy.find((s) => s.party === "company");
+              const client = document.signedBy.find((s) => s.party === "client");
+
+              return (
+                <li key={document.id} className="py-3">
+                  <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 text-sm">
+                    <span className="font-medium">{document.title}</span>
+                    <span className="text-text-subtle">{document.kindLabel}</span>
+                    {document.amount && (
+                      <span className="tabular-nums">
+                        {formatMoney(Number(document.amount), project.currency)}
+                      </span>
+                    )}
+                    <span className="text-text-muted">
+                      {formatDate(document.issuedOn)}
+                    </span>
+                  </div>
+
+                  {/*
+                    Said as what is outstanding, not as what is done.
+
+                    "Waiting on the client" is the thing somebody opens this
+                    screen to find out. A list of who has signed makes them work
+                    out the answer by subtraction.
+                  */}
+                  {document.needsSignature && (
+                    <p className="mt-1 text-xs text-text-subtle">
+                      {company && client
+                        ? `Signed by both — ${company.name} and ${client.name}`
+                        : client
+                          ? `Signed by ${client.name}. Waiting on us.`
+                          : company
+                            ? `Signed by ${company.name}. Waiting on the client.`
+                            : "Waiting on both sides."}
+                    </p>
+                  )}
+
+                  {document.note && (
+                    <p className="mt-1 text-sm text-text-muted">{document.note}</p>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        )}
+
+        <DocumentForm
+          projectId={project.id}
+          clientId={project.client_id}
+          kinds={documentKinds}
+        />
       </section>
 
       <section className="mt-6 grid gap-6 lg:grid-cols-2">

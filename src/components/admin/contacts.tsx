@@ -8,6 +8,8 @@ import { Field, FIELD } from "@/components/ui/field";
 import { inviteContact, removeContact } from "@/lib/actions/contacts";
 import { idleState } from "@/lib/actions/state";
 import { cn, formatDate } from "@/lib/utils";
+import { useConfirm } from "@/components/ui/confirm-dialog";
+import { useBusyWhile } from "@/components/forms/use-busy-while";
 
 export interface Contact {
   id: string;
@@ -105,6 +107,7 @@ export function Contacts({
 
 function InviteForm({ clientId, onDone }: { clientId: string; onDone: () => void }) {
   const [state, action, pending] = useActionState(inviteContact, idleState);
+  useBusyWhile(pending, "Working");
   const form = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
@@ -185,12 +188,31 @@ function InviteForm({ clientId, onDone }: { clientId: string; onDone: () => void
 
 function RemoveContact({ contactId, name }: { contactId: string; name: string }) {
   const [state, action, pending] = useActionState(removeContact, idleState);
+  useBusyWhile(pending, "Removing contact");
+  const form = useRef<HTMLFormElement>(null);
+  const confirm = useConfirm();
 
   return (
-    <form action={action}>
+    <form action={action} ref={form}>
       <input type="hidden" name="contact_id" value={contactId} />
+      {/*
+        Asked before it happens.
+
+        This ends a real person's sign-in. They are not told, so the first they
+        know of a mis-click is being locked out of their own project — and the
+        control is a small icon in a row of them.
+      */}
       <button
-        type="submit"
+        type="button"
+        onClick={async () => {
+          const yes = await confirm({
+            title: `End ${name}'s access?`,
+            body: "They stop being able to sign in and see the project. You can invite them again afterwards.",
+            confirmLabel: "End their access",
+            tone: "danger",
+          });
+          if (yes) form.current?.requestSubmit();
+        }}
         disabled={pending}
         aria-label={`End ${name}'s access`}
         className="rounded-lg p-2 text-text-subtle transition-colors hover:bg-surface-2 hover:text-danger disabled:opacity-50"

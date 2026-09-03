@@ -172,6 +172,53 @@ export async function saveProject(
     };
   }
 
+  /*
+    The two dates and the duration have to agree with each other.
+
+    None of this was checked. A project could be saved starting on the 31st,
+    due on the 10th of the following month, and described on the client's own
+    document as ten weeks of work — eleven days of deadline behind a ten-week
+    promise, with nothing anywhere objecting. The date inputs now carry a `min`,
+    but that is a convenience in one browser: these values arrive as text in a
+    POST and can say anything, so the rule lives here.
+
+    The duration and the deadline are deliberately different fields — the hint
+    on the form says so, one is what the client reads and the other is what we
+    work to — so they are not forced to match. The only thing that cannot be
+    true is a promise longer than the time allowed for it.
+  */
+  const startDate = text(formData.get("start_date"));
+  const targetDate = text(formData.get("target_date"));
+
+  if (startDate && targetDate && targetDate < startDate) {
+    return {
+      status: "error",
+      message: "Check the dates.",
+      fieldErrors: {
+        target_date: "The target date is before the project starts.",
+      },
+    };
+  }
+
+  if (startDate && targetDate && parsed.data.estimated_weeks) {
+    const days = Math.round(
+      (Date.parse(targetDate) - Date.parse(startDate)) / 86_400_000,
+    );
+    const weeksAvailable = days / 7;
+
+    if (parsed.data.estimated_weeks > Math.ceil(weeksAvailable)) {
+      return {
+        status: "error",
+        message: "Check the dates.",
+        fieldErrors: {
+          estimated_weeks:
+            `The document would say ${parsed.data.estimated_weeks} weeks, but the target ` +
+            `date is ${days} day${days === 1 ? "" : "s"} after the start. Change one of them.`,
+        },
+      };
+    }
+  }
+
   const supabase = await createClient();
 
   const { error } = await supabase
@@ -180,9 +227,29 @@ export async function saveProject(
       name: parsed.data.name,
       summary: text(formData.get("summary")),
       stage: parsed.data.stage,
-      start_date: text(formData.get("start_date")),
-      target_date: text(formData.get("target_date")),
+      // The values the checks above ran on, not a second read of the form.
+      start_date: startDate,
+      target_date: targetDate,
       estimated_weeks: parsed.data.estimated_weeks ?? null,
+
+      /* Every ticked box, every time. A cleared fieldset sends nothing at all,
+         so reading only what arrived would make "unchanged" and "all removed"
+         look identical — and scope quietly staying on a project nobody meant
+         it to be on is the expensive direction of that mistake. */
+      service_keys: formData.getAll("service_keys").map(String).filter(Boolean),
+
+      /* Whose project this is. Empty means nobody yet, which is a real state
+         between one person leaving it and the next picking it up — and a
+         better record than a name left there because the field would not save
+         without one. */
+      lead_developer_id: text(formData.get("lead_developer_id")),
+
+      /* Which client this belongs to.
+         Set once at creation until now, which meant a project started under
+         the wrong company, or moved between two of a group's entities, could
+         only be fixed in SQL. Blank is refused rather than stored: a project
+         belonging to nobody has no client to show it to. */
+      client_id: text(formData.get("client_id")) ?? undefined,
 
       client_brief: text(formData.get("client_brief")),
       what_we_will_do: text(formData.get("what_we_will_do")),
@@ -207,6 +274,58 @@ export async function saveProject(
   if (error) {
     console.error("[projects] save failed:", error.message);
     return { status: "error", message: "Could not save. Nothing was changed." };
+  }
+
+  /*
+    Who is on the project, saved as a difference rather than as a replacement.
+
+    Membership is not decoration: `scope_is_complete()` calls a project
+    delivered when nobody on it is still unfinished, so these rows decide when
+    it can be closed and when a change starts counting against the allowance.
+    Nothing in the application wrote them until now — they arrived by hand, or
+    they did not arrive.
+
+    **Rows that stay are left alone.** Deleting everybody and re-inserting the
+    ticked set would be shorter and would throw away `completed_at` on every
+    person who had already finished, quietly un-delivering the project. Only
+    the people actually added or removed are touched.
+  */
+  const wanted = new Set(formData.getAll("member_ids").map(String).filter(Boolean));
+
+  const { data: current } = await supabase
+    .from("project_members")
+    .select("staff_id")
+    .eq("project_id", id);
+
+  const existing = new Set((current ?? []).map((row) => row.staff_id));
+
+  const added = [...wanted].filter((staffId) => !existing.has(staffId));
+  const removed = [...existing].filter((staffId) => !wanted.has(staffId));
+
+  if (added.length > 0) {
+    const { error: addError } = await supabase.from("project_members").insert(
+      added.map((staffId) => ({
+        project_id: id,
+        staff_id: staffId,
+        /* Everybody joins as a developer. A second role selector here would be
+           two answers to "what do they do" on one screen; the member role is
+           changed on the project itself if it is something else. */
+        role: "developer" as const,
+        is_client_visible: true,
+      })),
+    );
+
+    if (addError) console.error("[projects] adding members failed:", addError.message);
+  }
+
+  if (removed.length > 0) {
+    const { error: removeError } = await supabase
+      .from("project_members")
+      .delete()
+      .eq("project_id", id)
+      .in("staff_id", removed);
+
+    if (removeError) console.error("[projects] removing members failed:", removeError.message);
   }
 
   revalidatePath("/projects");
@@ -478,7 +597,7 @@ export async function approveProject(
     buildAccountEmail({
         name: parsed.data.contact_name,
         email: contactEmail,
-        password: contactPassword ?? "(the password you already use)",
+        password: contactPassword,
       projectName: project.name,
       trackerUrl,
       role: "client",
@@ -487,7 +606,7 @@ export async function approveProject(
       ? buildAccountEmail({
             name: developer.full_name,
             email: developer.email,
-            password: "(the password you already use)",
+            password: null,
           projectName: project.name,
           trackerUrl,
           role: "developer",

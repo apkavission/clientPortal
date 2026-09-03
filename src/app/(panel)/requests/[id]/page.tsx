@@ -8,6 +8,7 @@ import { TriageForm } from "@/components/admin/triage-form";
 import { requireMenu } from "@/lib/auth/session";
 import { REQUEST_STATUS_LABEL, REQUEST_TONE } from "@/lib/labels";
 import { getRequestThread } from "@/lib/queries/requests";
+import { formatMoney } from "@/lib/money";
 import { cn, formatDate } from "@/lib/utils";
 
 type Props = { params: Promise<{ id: string }> };
@@ -42,6 +43,16 @@ export default async function RequestThreadPage({ params }: Props) {
   const { request, project, client, messages, changesUsed, unfinished } = thread;
 
   const approved = Boolean(request.approved_at);
+
+  /* `extra` is jsonb: an object by constraint, but still `Json` to TypeScript,
+     so it is narrowed here rather than trusted. Only string values are shown —
+     anything else was written by something other than this form. */
+  const extraPairs =
+    request.extra && typeof request.extra === "object" && !Array.isArray(request.extra)
+      ? Object.entries(request.extra as Record<string, unknown>).filter(
+          (entry): entry is [string, string] => typeof entry[1] === "string",
+        )
+      : [];
   const delivered = Boolean(project.scope_delivered_at);
   const changesLeft = Math.max(0, (project.change_limit ?? 0) - changesUsed);
 
@@ -86,6 +97,34 @@ export default async function RequestThreadPage({ params }: Props) {
           {formatDate(request.created_at)}
         </p>
       </header>
+
+      {/*
+        What it costs, and anything else recorded about it.
+
+        Shown near the top rather than beside the answer, because the price is
+        what the next conversation is about — and "not priced" is printed
+        rather than left blank, since a missing figure and a figure of nothing
+        are different answers and only one of them is a promise.
+      */}
+      {(request.quoted_amount !== null || extraPairs.length > 0) && (
+        <dl className="mt-6 flex flex-wrap gap-x-10 gap-y-3 border-t border-border pt-5">
+          <div>
+            <dt className="text-xs text-text-subtle">What it costs</dt>
+            <dd className="mt-0.5 text-lg font-semibold tabular-nums">
+              {request.quoted_amount === null
+                ? "Not priced"
+                : formatMoney(request.quoted_amount)}
+            </dd>
+          </div>
+
+          {extraPairs.map(([label, value]) => (
+            <div key={label}>
+              <dt className="text-xs text-text-subtle">{label}</dt>
+              <dd className="mt-0.5 text-sm">{value || "—"}</dd>
+            </div>
+          ))}
+        </dl>
+      )}
 
       {request.description && (
         <p className="measure mt-6 whitespace-pre-line text-sm leading-relaxed">

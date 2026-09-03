@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { Pagination } from "@/components/admin/pagination";
+import { requestedPage, resolve } from "@/lib/pagination";
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { Badge } from "@/components/admin/badge";
@@ -29,10 +31,26 @@ const STATUS_LABEL = {
  * one and the first thing anybody does here is add the client they just spoke
  * to. The empty state says exactly that rather than showing a blank table.
  */
-export default async function ClientsPage() {
+type Props = {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+};
+
+export default async function ClientsPage({ searchParams }: Props) {
   await requireMenu("clients");
 
-  const clients = await getClients();
+  /*
+    The page comes from the address, not from state.
+
+    So a link to page four is a link to page four — it can be sent to somebody,
+    opened in a new tab, and it survives a refresh. A `useState` version is
+    shorter and loses the reader's place every time they open a client and come
+    back.
+  */
+  const query = await searchParams;
+  const request = requestedPage(query);
+
+  const { rows: clients, total } = await getClients(request);
+  const paged = resolve(clients, total, request);
 
   return (
     <div className="mx-auto w-full max-w-5xl">
@@ -62,6 +80,7 @@ export default async function ClientsPage() {
           </p>
         </div>
       ) : (
+        <>
         <ul className="mt-10 divide-y divide-border overflow-hidden rounded-2xl border border-border bg-surface">
           {clients.map((client) => (
             <li key={client.id}>
@@ -89,6 +108,9 @@ export default async function ClientsPage() {
             </li>
           ))}
         </ul>
+
+        <Pagination paged={paged} pathname="/clients" query={query} />
+        </>
       )}
     </div>
   );

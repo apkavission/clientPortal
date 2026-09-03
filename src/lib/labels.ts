@@ -50,6 +50,9 @@ export const TASK_STATUS_LABEL: Record<TaskStatus, string> = {
   in_progress: "In progress",
   in_review: "In review",
   blocked: "Blocked",
+  /* Short on purpose: it is a column heading on a board that already has
+     five, and "Needs changes" wraps on a phone. */
+  needs_changes: "Changes",
   done: "Done",
   cancelled: "Cancelled",
 };
@@ -118,6 +121,10 @@ export const TASK_TONE: Record<TaskStatus, BadgeTone> = {
   in_progress: "info",
   in_review: "accent",
   blocked: "danger",
+  /* Amber, not red. Work that came back is the review doing its job, not a
+     problem with the project — colouring it like a blocker makes a healthy
+     board look like it is on fire. */
+  needs_changes: "warning",
   done: "success",
   cancelled: "neutral",
 };

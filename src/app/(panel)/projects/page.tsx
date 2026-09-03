@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { Pagination } from "@/components/admin/pagination";
+import { requestedPage, resolve } from "@/lib/pagination";
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { Badge } from "@/components/admin/badge";
@@ -22,10 +24,26 @@ export const metadata: Metadata = { title: "Projects" };
  * Health before progress on each card, because a project at 80% that is late
  * needs somebody today and one at 20% that is on track does not.
  */
-export default async function ProjectsPage() {
+type Props = {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+};
+
+export default async function ProjectsPage({ searchParams }: Props) {
   await requireMenu("projects");
 
-  const projects = await getProjects();
+  /*
+    The page is in the address, so a link to page two is a link to page two.
+
+    The two groups below are drawn from whatever this page holds — newest
+    first, so proposals cluster near the front where somebody is looking for
+    them anyway. Splitting the pagination per group would give two independent
+    page numbers in one address, which nobody can reason about.
+  */
+  const query = await searchParams;
+  const request = requestedPage(query);
+
+  const { rows: projects, total } = await getProjects(request);
+  const paged = resolve(projects, total, request);
   const proposals = projects.filter((project) => !project.approved_at);
   const live = projects.filter((project) => project.approved_at);
 
@@ -59,6 +77,8 @@ export default async function ProjectsPage() {
             <Group title="Waiting on the client" projects={proposals} />
           )}
           {live.length > 0 && <Group title="Approved" projects={live} />}
+
+          <Pagination paged={paged} pathname="/projects" query={query} />
         </>
       )}
     </div>

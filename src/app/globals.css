@@ -48,8 +48,8 @@
 
   /* -- Text -------------------------------------------------------------- */
   --text: #0b1220;
-  --text-muted: #475467;
-  --text-subtle: #54607a;
+  --text-muted: #334155;
+  --text-subtle: #475569;
   --text-inverse: #ffffff;
 
   /* -- Accent ------------------------------------------------------------ */
@@ -108,9 +108,9 @@
     --border-strong: #33404f;
     --ring: #2dd4bf;
 
-    --text: #e8edf4;
-    --text-muted: #98a5b6;
-    --text-subtle: #808fa2;
+    --text: #f3f6fb;
+    --text-muted: #c8d3e0;
+    --text-subtle: #a9b6c6;
     --text-inverse: #04201f;
 
     --accent: #2dd4bf;
@@ -157,9 +157,9 @@
   --border-strong: #33404f;
   --ring: #2dd4bf;
 
-  --text: #e8edf4;
-  --text-muted: #98a5b6;
-  --text-subtle: #808fa2;
+  --text: #f3f6fb;
+  --text-muted: #c8d3e0;
+  --text-subtle: #a9b6c6;
   --text-inverse: #04201f;
 
   --accent: #2dd4bf;
@@ -501,8 +501,22 @@ body {
     background: #ffffff;
   }
 
+  /*
+    The whole application header, not just the nav inside it.
+
+    This said `header nav`, which hid exactly one child. Everything else the
+    header carries — the menu button, the logo, the signed-in person's name,
+    the theme toggle and the Sign out button — is a sibling of that nav, so it
+    all survived into the PDF and printed across the top of the document. A
+    client opening a proposal found our panel chrome above it, with somebody
+    else's name and a Sign out button in it.
+
+    `header` is application chrome everywhere in this panel, and the document
+    renders its own `<article>` with its own heading. There is nothing in a
+    header that a printed page wants.
+  */
   aside,
-  header nav,
+  header,
   .print\:hidden {
     display: none !important;
   }

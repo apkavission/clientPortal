@@ -220,6 +220,7 @@ export type Database = {
           change_limit: number;
           change_terms: string | null;
           scope_delivered_at: string | null;
+          service_keys: string[];
         };
         Insert: {
           id?: string;
@@ -254,6 +255,7 @@ export type Database = {
           change_limit?: number;
           change_terms?: string | null;
           scope_delivered_at?: string | null;
+          service_keys?: string[];
         };
         Update: {
           id?: string;
@@ -288,6 +290,7 @@ export type Database = {
           change_limit?: number;
           change_terms?: string | null;
           scope_delivered_at?: string | null;
+          service_keys?: string[];
         };
         Relationships: [];
       };
@@ -312,6 +315,8 @@ export type Database = {
           approved_at: string | null;
           approved_by: string | null;
           change_number: number | null;
+          quoted_amount: number | null;
+          extra: Json;
         };
         Insert: {
           id?: string;
@@ -332,6 +337,8 @@ export type Database = {
           approved_at?: string | null;
           approved_by?: string | null;
           change_number?: number | null;
+          quoted_amount?: number | null;
+          extra?: Json;
         };
         Update: {
           id?: string;
@@ -352,6 +359,8 @@ export type Database = {
           approved_at?: string | null;
           approved_by?: string | null;
           change_number?: number | null;
+          quoted_amount?: number | null;
+          extra?: Json;
         };
         Relationships: [];
       };
@@ -919,6 +928,7 @@ export type Database = {
           is_staff: boolean | null;
           is_active: boolean | null;
           sort_order: number | null;
+          portal_menu: string[] | null;
         };
         Insert: {
           key?: string | null;
@@ -928,6 +938,7 @@ export type Database = {
           is_staff?: boolean | null;
           is_active?: boolean | null;
           sort_order?: number | null;
+          portal_menu?: string[] | null;
         };
         Update: {
           key?: string | null;
@@ -937,6 +948,35 @@ export type Database = {
           is_staff?: boolean | null;
           is_active?: boolean | null;
           sort_order?: number | null;
+          portal_menu?: string[] | null;
+        };
+        Relationships: [];
+      };
+      /** A view. */
+      services_master: {
+        Row: {
+          slug: string | null;
+          name: string | null;
+          short_name: string | null;
+          summary: string | null;
+          sort_order: number | null;
+          is_offered: boolean | null;
+        };
+        Insert: {
+          slug?: string | null;
+          name?: string | null;
+          short_name?: string | null;
+          summary?: string | null;
+          sort_order?: number | null;
+          is_offered?: boolean | null;
+        };
+        Update: {
+          slug?: string | null;
+          name?: string | null;
+          short_name?: string | null;
+          summary?: string | null;
+          sort_order?: number | null;
+          is_offered?: boolean | null;
         };
         Relationships: [];
       };

@@ -8,6 +8,7 @@ import { createClientRecord, saveClientRecord } from "@/lib/actions/clients";
 import { idleState } from "@/lib/actions/state";
 import { cn } from "@/lib/utils";
 import type { ClientRow } from "@/types/database";
+import { useBusyWhile } from "@/components/forms/use-busy-while";
 
 /**
  * A client, added or edited.
@@ -26,6 +27,7 @@ export function ClientForm({ client }: { client?: ClientRow }) {
     client ? saveClientRecord : createClientRecord,
     idleState,
   );
+  useBusyWhile(pending, "Working");
 
   return (
     <form action={action} className="space-y-8">

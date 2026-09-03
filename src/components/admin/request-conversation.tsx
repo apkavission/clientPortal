@@ -8,6 +8,7 @@ import { FIELD } from "@/components/ui/field";
 import { approveRequest, sendRequestMessage } from "@/lib/actions/requests";
 import { idleState } from "@/lib/actions/state";
 import { cn } from "@/lib/utils";
+import { useBusyWhile } from "@/components/forms/use-busy-while";
 
 /**
  * Talking to the client about a request, and deciding it.
@@ -20,6 +21,7 @@ import { cn } from "@/lib/utils";
 
 export function MessageBox({ requestId }: { requestId: string }) {
   const [state, action, pending] = useActionState(sendRequestMessage, idleState);
+  useBusyWhile(pending, "Sending request message");
   const form = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
@@ -101,6 +103,7 @@ export function ApproveRequest({
   unfinished: string[];
 }) {
   const [state, action, pending] = useActionState(approveRequest, idleState);
+  useBusyWhile(pending, "Working");
 
   return (
     <form action={action} className="space-y-4">

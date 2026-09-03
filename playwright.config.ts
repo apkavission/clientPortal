@@ -51,6 +51,12 @@ export default defineConfig({
       use: { ...devices["Desktop Chrome"], storageState: "e2e/.auth/client.json" },
       testMatch: /client\.spec\.ts/,
     },
+    {
+      name: "responsive",
+      dependencies: ["setup"],
+      use: { ...devices["Desktop Chrome"], storageState: "e2e/.auth/staff.json" },
+      testMatch: /responsive\.spec\.ts/,
+    },
   ],
 
   webServer: {

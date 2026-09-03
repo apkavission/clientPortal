@@ -22,41 +22,70 @@ import type { NavGroup } from "@/lib/nav";
 export function Shell({
   groups,
   who,
+  role,
   children,
 }: {
   groups: NavGroup[];
   who: string;
+  /** The signed-in person's role, so it is visible rather than inferred. */
+  role: string;
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex min-h-dvh">
-      <aside className="hidden w-60 shrink-0 border-r border-border bg-surface lg:block">
-        <div className="flex h-16 items-center border-b border-border px-5">
+    /*
+      The shell holds still; the content scrolls inside it.
+
+      It was `min-h-dvh`, so the whole page scrolled as one — the rail and the
+      header slid away with the content, and a long project screen showed two
+      scrollbars: the window's and, on any panel with its own overflow, that
+      panel's. The tracker was given this same treatment on 2026-09-02.
+    */
+    <div className="flex h-dvh overflow-hidden">
+      <aside className="hidden w-60 shrink-0 flex-col overflow-y-auto border-r border-border bg-surface lg:flex">
+        <div className="flex h-24 items-center border-b border-border px-5">
           <Link href="/" aria-label="Dashboard">
-            <BrandMark height={36} />
+            <BrandMark height={72} />
           </Link>
         </div>
         <Sidebar groups={groups} />
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex h-16 shrink-0 items-center gap-3 border-b border-border bg-surface px-4 sm:px-6">
+        <header className="flex h-24 shrink-0 items-center gap-3 border-b border-border bg-surface px-4 sm:px-6">
           <div className="lg:hidden">
             <MobileNav groups={groups} />
           </div>
 
           <Link href="/" className="lg:hidden" aria-label="Dashboard">
-            <BrandMark height={30} />
+            <BrandMark height={60} />
           </Link>
 
           <div className="ml-auto flex items-center gap-2">
-            <span className="hidden text-sm text-text-muted sm:inline">{who}</span>
+            {/* Name and role together. Which role somebody holds decides what
+                they can see, so it belongs on screen rather than in their
+                memory — and when a menu looks wrong this is the first thing
+                worth checking. */}
+            <span className="hidden text-right leading-tight sm:block">
+              <span className="block text-sm text-text-muted">{who}</span>
+              <span className="block font-mono text-[0.65rem] uppercase tracking-[0.12em] text-text-subtle">
+                {role}
+              </span>
+            </span>
             <ThemeToggle />
             <SignOutButton />
           </div>
         </header>
 
-        <main className="flex-1 px-4 py-8 sm:px-6 lg:px-10">{children}</main>
+        {/*
+          The only thing on the page that scrolls.
+
+          Padding is on an inner div rather than here, so a screen that wants
+          the full height can set `h-full` on its own root without fighting a
+          padded box.
+        */}
+        <main className="relative flex-1 overflow-y-auto">
+          <div className="h-full px-4 py-8 sm:px-6 lg:px-10">{children}</div>
+        </main>
       </div>
     </div>
   );

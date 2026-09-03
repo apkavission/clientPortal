@@ -33,7 +33,10 @@ export default async function ClientPage({ params }: Props) {
   if (!client) notFound();
 
   const [projects, contacts] = await Promise.all([
-    getProjects().then((all) => all.filter((project) => project.client_id === id)),
+    /* This client's projects. Filtered from the whole list rather than a
+       page of it — one client has a handful, and paging them would put a
+       control under a list of three. */
+    getProjects().then(({ rows }) => rows.filter((project) => project.client_id === id)),
     getContacts(id),
   ]);
 
