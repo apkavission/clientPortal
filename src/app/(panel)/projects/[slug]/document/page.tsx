@@ -90,7 +90,7 @@ export default async function DocumentPage({ params }: Props) {
           </div>
 
           <div className="text-right text-sm">
-            <p className="font-semibold">Apka Saathi Private Limited</p>
+            <p className="font-semibold">Rahvian Technologies Private Limited</p>
             <p className="mt-1 text-text-muted">{formatDate(new Date())}</p>
           </div>
         </header>
@@ -191,7 +191,7 @@ export default async function DocumentPage({ params }: Props) {
             in writing and set up your access, and the figures above become the
             agreed amounts.
           </p>
-          <p className="mt-2">Apka Saathi Private Limited</p>
+          <p className="mt-2">Rahvian Technologies Private Limited</p>
         </footer>
       </article>
     </div>

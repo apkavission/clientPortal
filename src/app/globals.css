@@ -27,7 +27,7 @@
   color-scheme: light;
 
   /* -- Surface ----------------------------------------------------------- */
-  --bg: #f4f6f8;
+  --bg: #f5f7fa;
   --surface: #ffffff;
   --surface-2: #eef1f4;
   --surface-3: #e3e8ed;
@@ -47,12 +47,16 @@
   --ring: #0c6f6e;
 
   /* -- Text -------------------------------------------------------------- */
-  --text: #0b1220;
+  --text: #0b1f26;
   --text-muted: #334155;
   --text-subtle: #475569;
   --text-inverse: #ffffff;
 
   /* -- Accent ------------------------------------------------------------ */
+  /* The mark's own teal. Not a text or button colour: white on it
+     measures 1.95:1. `--accent` is the readable one.            */
+  --brand: #00d1b2;
+  --brand-soft: #e4f7f3;
   --accent: #0c6f6e;
   --accent-hover: #0a6362;
   --accent-fg: #ffffff;
@@ -95,8 +99,8 @@
   :root:not([data-theme="light"]) {
     color-scheme: dark;
 
-    --bg: #080b11;
-    --surface: #0e131b;
+    --bg: #061318;
+    --surface: #0b1f26;
     --surface-2: #161d27;
     --surface-3: #1f2833;
     --overlay: rgb(3 6 12 / 0.6);
@@ -108,12 +112,16 @@
     --border-strong: #33404f;
     --ring: #2dd4bf;
 
-    --text: #f3f6fb;
+    --text: #f5f7fa;
     --text-muted: #c8d3e0;
     --text-subtle: #a9b6c6;
     --text-inverse: #04201f;
 
-    --accent: #2dd4bf;
+    /* The mark's own teal. Not a text or button colour: white on it
+       measures 1.95:1. `--accent` is the readable one.            */
+    --brand: #00d1b2;
+    --brand-soft: rgb(0 209 178 / 0.14);
+    --accent: #00d1b2;
     --accent-hover: #5eead4;
     --accent-fg: #04201f;
     --accent-soft: #0d2b2a;
@@ -144,8 +152,8 @@
 :root[data-theme="dark"] {
   color-scheme: dark;
 
-  --bg: #080b11;
-  --surface: #0e131b;
+  --bg: #061318;
+  --surface: #0b1f26;
   --surface-2: #161d27;
   --surface-3: #1f2833;
   --overlay: rgb(3 6 12 / 0.6);
@@ -157,12 +165,16 @@
   --border-strong: #33404f;
   --ring: #2dd4bf;
 
-  --text: #f3f6fb;
+  --text: #f5f7fa;
   --text-muted: #c8d3e0;
   --text-subtle: #a9b6c6;
   --text-inverse: #04201f;
 
-  --accent: #2dd4bf;
+  /* The mark's own teal. Not a text or button colour: white on it
+     measures 1.95:1. `--accent` is the readable one.            */
+  --brand: #00d1b2;
+  --brand-soft: rgb(0 209 178 / 0.14);
+  --accent: #00d1b2;
   --accent-hover: #5eead4;
   --accent-fg: #04201f;
   --accent-soft: #0d2b2a;

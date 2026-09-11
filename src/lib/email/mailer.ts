@@ -11,10 +11,10 @@ import { logoAttachment, renderEmail, type EmailBrand } from "@/lib/email/layout
  * constant is the one place an address changes.
  */
 const BRAND: EmailBrand = {
-  companyName: "Apka Vission",
-  legalName: "Apka Saathi Private Limited",
-  email: "hello@apkavission.com",
-  siteUrl: "https://apkavission.com",
+  companyName: "Rahvian",
+  legalName: "Rahvian Technologies Private Limited",
+  email: "hello@rahvian.com",
+  siteUrl: "https://rahvian.com",
 };
 
 /**
@@ -182,7 +182,7 @@ export async function buildAccountEmail(input: {
     "",
     passwordNote,
     "",
-    "Apka Saathi Private Limited",
+    "Rahvian Technologies Private Limited",
   ].join("\n");
 
   return {

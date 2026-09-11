@@ -30,7 +30,7 @@ const BRAND = {
   accent: "#0e7c7b",
 } as const;
 
-const LOGO_CID = "apka-vission-logo";
+const LOGO_CID = "rahvian-logo";
 
 /**
  * The logo travels with the message, so it renders without "show images".

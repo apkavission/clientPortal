@@ -5,7 +5,7 @@ because the first attempt at this project got it wrong. It binds every
 application in the estate: the company website, this portal, the task tracker,
 and all fifteen demo sites.**
 
-> logo bhi Apka Vission ka hi use karna hai — text me "Apka Vission" mat likho,
+> logo bhi Rahvian ka hi use karna hai — text me "Rahvian" mat likho,
 > logo use karo jo services me hai. Aur yahi logo aur loader services wala hi
 > sab jagah, har project me.
 
@@ -15,7 +15,7 @@ and all fifteen demo sites.**
 
 **The logo is the file, never the name typed out.** Wherever the brand appears —
 a header, a sign-in screen, an email, a document — it is the actual mark from
-`public/brand/`. Two styled words that say "Apka Vission" are a *description* of
+`public/brand/`. Two styled words that say "Rahvian" are a *description* of
 the brand, not the brand.
 
 **The loader is the company website's loader, everywhere.** The mark between the
@@ -94,7 +94,7 @@ The mark is what tells a client the message is from the company they hired.
 Two things make it actually appear, and both matter:
 
 **Attached, not linked.** The image is a part of the message, referenced as
-`cid:apka-vission-logo`. That renders before anybody presses "show images" —
+`cid:rahvian-logo`. That renders before anybody presses "show images" —
 which most people never press. A hosted URL leaves a broken box in the header of
 the one email that most needs to look legitimate.
 

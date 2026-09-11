@@ -541,7 +541,7 @@ export type DocumentRow = {
 export type DocumentSignatureRow = {
   id: string;
   document_id: string;
-  /** 'company' is Apka Vission signing; 'client' is the other side. */
+  /** 'company' is Rahvian signing; 'client' is the other side. */
   party: "company" | "client";
   staff_id: string | null;
   client_user_id: string | null;

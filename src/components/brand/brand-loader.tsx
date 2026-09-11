@@ -50,7 +50,7 @@ export function BrandLoader({
   size = "md",
   label = "Loading",
   showLabel = false,
-  words = ["Apka", "Vission"],
+  words = ["Rahvian", "Technologies"],
   children,
   className,
 }: {
@@ -159,14 +159,14 @@ export function BrandSymbol({ className }: { className?: string }) {
           of known size from our own origin; there is nothing for the optimiser
           to do, and this must never be deferred. */}
       <img
-        src="/brand/symbol-light.svg"
+        src="/brand/symbol-light.png"
         alt=""
         aria-hidden
         className={cn("theme-light-only", className)}
       />
       {/* eslint-disable-next-line @next/next/no-img-element -- see above */}
       <img
-        src="/brand/symbol-dark.svg"
+        src="/brand/symbol-dark.png"
         alt=""
         aria-hidden
         className={cn("theme-dark-only", className)}
@@ -179,7 +179,7 @@ export function BrandSymbol({ className }: { className?: string }) {
  * The company logo, at rest. What the header and the sign-in screen show.
  *
  * **The logo file, not the name in text.** The first version of this component
- * wrote "Apka Vission" as two styled words, which is not the brand — it is a
+ * wrote "Rahvian" as two styled words, which is not the brand — it is a
  * description of it. The owner's rule across the estate is the actual mark,
  * everywhere it appears, in every project.
  *
@@ -206,8 +206,8 @@ export function BrandMark({
           size from our own origin, and the one image that must never be
           deferred. */}
       <img
-        src="/brand/logo-light.svg"
-        alt="Apka Vission"
+        src="/brand/logo-wide-light.png"
+        alt="Rahvian"
         width={width}
         height={height}
         style={{ height, width }}
@@ -215,8 +215,8 @@ export function BrandMark({
       />
       {/* eslint-disable-next-line @next/next/no-img-element -- see above */}
       <img
-        src="/brand/logo-dark.svg"
-        alt="Apka Vission"
+        src="/brand/logo-wide-dark.png"
+        alt="Rahvian"
         width={width}
         height={height}
         style={{ height, width }}

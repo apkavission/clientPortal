@@ -1,17 +1,23 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist_Mono, Poppins } from "next/font/google";
 import "./globals.css";
 import { BusyProvider } from "@/components/brand/busy-overlay";
 
-const sans = Geist({ variable: "--font-sans-loaded", subsets: ["latin"] });
+/* Poppins, which is what the identity sheet names for everything that is not
+   the wordmark. It was Geist, chosen before there was an identity to follow. */
+const sans = Poppins({
+  variable: "--font-sans-loaded",
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+});
 const mono = Geist_Mono({ variable: "--font-mono-loaded", subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: {
-    default: "Apka Vission — Portal",
-    template: "%s · Apka Vission",
+    default: "Rahvian — Portal",
+    template: "%s · Rahvian",
   },
-  description: "Project progress, requirements and requests for Apka Saathi clients.",
+  description: "Project progress, requirements and requests for Rahvian clients.",
 
   /*
     Nothing here is ever indexed.
