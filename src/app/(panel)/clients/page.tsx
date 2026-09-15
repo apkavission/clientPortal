@@ -7,6 +7,7 @@ import { Badge } from "@/components/admin/badge";
 import { ButtonLink } from "@/components/ui/button";
 import { requireMenu } from "@/lib/auth/session";
 import { getClients } from "@/lib/queries/admin";
+import { PageHead } from "@/components/ui/page-head";
 
 export const metadata: Metadata = { title: "Clients" };
 
@@ -54,23 +55,20 @@ export default async function ClientsPage({ searchParams }: Props) {
 
   return (
     <div className="mx-auto w-full max-w-5xl">
-      <header className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold">Clients</h1>
-          <p className="measure mt-2 text-sm leading-relaxed text-text-muted">
-            Every company we work for, and the projects under each. A client is
-            added once; their projects come after.
-          </p>
-        </div>
-
-        <ButtonLink href="/clients/new">
-          <Plus className="size-4" aria-hidden />
-          Add a client
-        </ButtonLink>
-      </header>
+      <PageHead
+        section="Work"
+        title="Clients"
+        lede="Every company we work for, and the projects under each. A client is added once; their projects come after."
+        actions={
+          <ButtonLink href="/clients/new">
+            <Plus className="size-4" aria-hidden />
+            Add a client
+          </ButtonLink>
+        }
+      />
 
       {clients.length === 0 ? (
-        <div className="mt-10 rounded-2xl border border-dashed border-border bg-surface-2/40 p-8">
+        <div className="mt-10 panel border-dashed bg-surface-2/40 p-8">
           <h2 className="text-lg font-semibold">Nobody yet</h2>
           <p className="measure mt-3 text-sm leading-relaxed text-text-muted">
             Add the first client and their projects can be set up under them. The
@@ -81,7 +79,7 @@ export default async function ClientsPage({ searchParams }: Props) {
         </div>
       ) : (
         <>
-        <ul className="mt-10 divide-y divide-border overflow-hidden rounded-2xl border border-border bg-surface">
+        <ul className="mt-10 divide-y divide-border overflow-hidden panel">
           {clients.map((client) => (
             <li key={client.id}>
               <Link

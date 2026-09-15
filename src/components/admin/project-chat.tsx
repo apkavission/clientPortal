@@ -56,7 +56,7 @@ export function ProjectChat({
   }, [state]);
 
   return (
-    <section className="rounded-2xl border border-border bg-surface p-6">
+    <section className="panel p-6">
       <h2 className="flex items-center gap-2 text-sm font-semibold">
         <MessageSquare className="size-4" aria-hidden />
         About this project

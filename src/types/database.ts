@@ -118,6 +118,29 @@ export type StaffRow = Timestamps & {
   /** A key in company.roles — the master list, edited in the company website.
       Supersedes `role`, which is kept until everything reads the master. */
   role_key: string | null;
+
+  /*
+    Four columns the tracker writes and this panel does not.
+
+    They are on `portal.staff` because both applications share that table, and
+    they are listed here because `conformance.ts` compares this type against the
+    generated one column by column — a row the database has and the type does
+    not is a column a query here can select and get `never` back for.
+
+    They were missing for a while and nothing complained, because the generated
+    file this is checked against was itself out of date: 520 lines behind,
+    fourteen tables and these four columns short. Regenerating it is what made
+    the check able to see them. A conformance test is only ever as honest as the
+    thing it conforms to.
+  */
+  /** Last time this person was seen in either application. Set by the tracker. */
+  last_seen_at: string | null;
+  /** From the company website's employee record; the tracker shows birthdays. */
+  date_of_birth: string | null;
+  /** The day they joined, same source. */
+  joined_on: string | null;
+  /** A key in company.designations — their job title, as master data. */
+  designation_key: string | null;
 }
 
 export type ClientRow = Timestamps & {
@@ -144,6 +167,9 @@ export type ClientUserRow = Timestamps & {
   is_active: boolean;
   invited_at: string;
   accepted_at: string | null;
+
+  /** Last time this client was seen in either application. Set on sign-in. */
+  last_seen_at: string | null;
 }
 
 export type ClientProjectRow = Timestamps & {

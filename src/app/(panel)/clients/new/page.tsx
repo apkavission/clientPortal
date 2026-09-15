@@ -19,8 +19,8 @@ export default async function NewClientPage() {
         Clients
       </Link>
 
-      <h1 className="mt-4 text-2xl font-semibold">Add a client</h1>
-      <p className="measure mt-2 text-sm leading-relaxed text-text-muted">
+      <h1 className="head-rule mt-4 text-2xl font-semibold">Add a client</h1>
+      <p className="measure mt-7 text-sm leading-relaxed text-text-muted">
         Only the contact name is required. Everything else can be filled in when
         you have it — a client added after a phone call with nothing but a
         company name is a normal way to start.

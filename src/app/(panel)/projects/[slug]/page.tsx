@@ -113,11 +113,11 @@ export default async function ProjectPage({ params }: Props) {
             )}
           </div>
 
-          <h1 className="mt-3 text-2xl font-semibold">{project.name}</h1>
+          <h1 className="head-rule mt-3 text-2xl font-semibold">{project.name}</h1>
           {project.client && (
             <Link
               href={`/clients/${project.client.id}`}
-              className="mt-1 inline-block text-sm text-text-muted underline-offset-4 hover:text-text hover:underline"
+              className="mt-7 inline-block text-sm text-text-muted underline-offset-4 hover:text-text hover:underline"
             >
               {project.client.company_name ?? project.client.name}
             </Link>
@@ -132,7 +132,7 @@ export default async function ProjectPage({ params }: Props) {
 
       {/* 1 — where it stands ------------------------------------------------ */}
       <section className="mt-8 grid gap-4 sm:grid-cols-2">
-        <div className="rounded-2xl border border-border bg-surface p-6">
+        <div className="panel p-6">
           <h2 className="text-sm font-medium text-text-muted">Money</h2>
 
           <dl className="mt-4 space-y-2 text-sm">
@@ -159,7 +159,7 @@ export default async function ProjectPage({ params }: Props) {
           <ProgressBar className="mt-5" value={money.percentPaid} label="Paid so far" />
         </div>
 
-        <div className="rounded-2xl border border-border bg-surface p-6">
+        <div className="panel p-6">
           <h2 className="text-sm font-medium text-text-muted">Where it is</h2>
 
           <dl className="mt-4 space-y-2 text-sm">
@@ -194,7 +194,7 @@ export default async function ProjectPage({ params }: Props) {
 
       {/* 2 — the one action that matters, while it matters ------------------ */}
       {!project.approved_at && (
-        <section className="mt-6 rounded-2xl border border-border bg-surface p-6">
+        <section className="mt-6 panel p-6">
           <h2 className="text-base font-semibold">Approval</h2>
           <div className="mt-4">
             <ApproveForm
@@ -238,7 +238,7 @@ export default async function ProjectPage({ params }: Props) {
       </div>
 
       {/* 4 — the record ----------------------------------------------------- */}
-      <section className="mt-10 rounded-2xl border border-border bg-surface p-6">
+      <section className="mt-10 panel p-6">
         <h2 className="text-base font-semibold">Payments</h2>
 
         {payments.length === 0 ? (
@@ -277,7 +277,7 @@ export default async function ProjectPage({ params }: Props) {
         page names one, so a purchase order added next month appears without a
         deploy.
       */}
-      <section className="mt-6 rounded-2xl border border-border bg-surface p-6">
+      <section className="mt-6 panel p-6">
         <h2 className="text-base font-semibold">Documents</h2>
         <p className="mt-1 text-sm text-text-muted">
           Issued to {project.client?.name ?? "the client"}. They see these in the
@@ -343,7 +343,7 @@ export default async function ProjectPage({ params }: Props) {
       </section>
 
       <section className="mt-6 grid gap-6 lg:grid-cols-2">
-        <div className="rounded-2xl border border-border bg-surface p-6">
+        <div className="panel p-6">
           <div className="flex items-center justify-between gap-3">
             <h2 className="text-base font-semibold">Work</h2>
             <span className="font-mono text-xs text-text-subtle">{tasks.length}</span>
@@ -368,7 +368,7 @@ export default async function ProjectPage({ params }: Props) {
           )}
         </div>
 
-        <div className="rounded-2xl border border-border bg-surface p-6">
+        <div className="panel p-6">
           <div className="flex items-center justify-between gap-3">
             <h2 className="text-base font-semibold">Scope</h2>
             <span className="font-mono text-xs text-text-subtle">{requirements.length}</span>

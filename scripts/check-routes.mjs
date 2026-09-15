@@ -44,20 +44,40 @@ const PEOPLE = [
   { who: "signed out", email: null, password: null },
   {
     who: "client",
+    from: "PORTAL_TEST_CLIENT_EMAIL",
     email: env.PORTAL_TEST_CLIENT_EMAIL,
     password: env.PORTAL_TEST_CLIENT_PASSWORD,
   },
   {
     who: "developer",
+    from: "TRACKER_TEST_EMPLOYEE_EMAIL",
     email: env.TRACKER_TEST_EMPLOYEE_EMAIL,
     password: env.TRACKER_TEST_EMPLOYEE_PASSWORD,
   },
   {
     who: "admin",
+    from: "PORTAL_TEST_STAFF_EMAIL",
     email: env.PORTAL_TEST_STAFF_EMAIL,
     password: env.PORTAL_TEST_STAFF_PASSWORD,
   },
 ];
+
+/*
+  Whose password this machine does not have.
+
+  The same reasoning as the "application was not running" note at the foot of
+  this file, applied one level up. A person with no credential cannot sign in,
+  so every screen answers them with the sign-in page — and every screen they
+  were *supposed* to reach then reads as a route that refused somebody it should
+  have let in. On the machine this was written on, a missing
+  `PORTAL_TEST_STAFF_EMAIL` produced **13 routes marked `!!`** across both
+  applications, every one of them in the admin column, every one of them a lie.
+
+  A check that cannot run has to say so. Counting it as a finding is worse than
+  not running it, because the next real finding gets waved away as "probably
+  just the credentials again".
+*/
+const ABSENT = PEOPLE.filter((person) => person.who !== "signed out" && !person.password);
 
 /**
  * What each person should get. `open` means a real screen; anything else is a
@@ -177,6 +197,13 @@ for (const app of APPS) {
       await page.close();
 
       const want = allowed[person.who] ?? "refused";
+
+      /* No credential, no verdict. See ABSENT above. */
+      if (!person.password && person.who !== "signed out") {
+        cells.push("no login".padEnd(13));
+        continue;
+      }
+
       const ok = want === "open" ? got === "open" : got !== "open";
       if (!ok) wrong += 1;
 
@@ -211,4 +238,23 @@ if (unreachable > 0) {
   console.log(`\n${wrong} route(s) answered somebody they should not have. Marked !! above.`);
 }
 
-process.exit(wrong === 0 && unreachable === 0 ? 0 : 1);
+/*
+  And whoever could not be asked, named — every time, without exception.
+
+  Printed after the verdict so a real finding is read first, but never omitted:
+  a column of "no login" is a column of questions nobody answered, and
+  "Every route answered the right person" printed over a silently skipped admin
+  is the most misleading thing this script could say. It is also why the exit
+  code is not clean while somebody is unasked — a green check that checked
+  three of four people is a green check nobody should trust.
+*/
+if (ABSENT.length > 0) {
+  console.log(
+    `
+Not checked as: ${ABSENT.map((person) => person.who).join(", ")} — there is no ` +
+      `password for them on this machine (${ABSENT.map((person) => person.from).join(", ")}). ` +
+      'Those columns say "no login" and were not judged either way.',
+  );
+}
+
+process.exit(wrong === 0 && unreachable === 0 && ABSENT.length === 0 ? 0 : 1);

@@ -29,17 +29,17 @@ export default async function NewProjectPage({ searchParams }: Props) {
         Projects
       </Link>
 
-      <h1 className="mt-4 text-2xl font-semibold">New project</h1>
+      <h1 className="head-rule mt-4 text-2xl font-semibold">New project</h1>
 
       {clients.length === 0 ? (
-        <p className="measure mt-6 rounded-2xl border border-dashed border-border bg-surface-2/40 p-6 text-sm leading-relaxed text-text-muted">
+        <p className="measure mt-6 panel border-dashed bg-surface-2/40 p-6 text-sm leading-relaxed text-text-muted">
           There are no clients yet, and a project belongs to one.{" "}
           <Link href="/clients/new" className="text-accent underline underline-offset-4">
             Add a client first.
           </Link>
         </p>
       ) : (
-        <div className="mt-8 rounded-2xl border border-border bg-surface p-6">
+        <div className="mt-8 panel p-6">
           <NewProjectForm clients={clients} preselected={preselected} />
         </div>
       )}

@@ -7,6 +7,7 @@ import { requireMenu } from "@/lib/auth/session";
 import { REQUEST_STATUS_LABEL, REQUEST_TONE } from "@/lib/labels";
 import { getOpenRequests } from "@/lib/queries/admin";
 import { formatDate } from "@/lib/utils";
+import { PageHead } from "@/components/ui/page-head";
 
 export const metadata: Metadata = { title: "Requests" };
 
@@ -37,24 +38,21 @@ export default async function RequestsPage({ searchParams }: Props) {
 
   return (
     <div className="mx-auto w-full max-w-4xl">
-      <header>
-        <h1 className="text-2xl font-semibold">Requests</h1>
-        <p className="measure mt-2 text-sm leading-relaxed text-text-muted">
-          Everything clients have asked for that has not been answered. A request
-          is not work until somebody here turns it into a task — which is what
-          keeps a fixed price fixed.
-        </p>
-      </header>
+      <PageHead
+        section="Work"
+        title="Requests"
+        lede="Everything clients have asked for that has not been answered. A request is not work until somebody here turns it into a task — which is what keeps a fixed price fixed."
+      />
 
       {requests.length === 0 ? (
-        <p className="mt-10 rounded-2xl border border-dashed border-border bg-surface-2/40 p-8 text-sm leading-relaxed text-text-muted">
+        <p className="mt-10 panel border-dashed bg-surface-2/40 p-8 text-sm leading-relaxed text-text-muted">
           Nothing waiting. That is the state this page should usually be in.
         </p>
       ) : (
         <>
         <ul className="mt-10 space-y-4">
           {requests.map((request) => (
-            <li key={request.id} className="rounded-2xl border border-border bg-surface p-6">
+            <li key={request.id} className="panel p-6">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0">
                   {request.project && (

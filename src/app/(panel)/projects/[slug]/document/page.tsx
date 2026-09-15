@@ -75,7 +75,7 @@ export default async function DocumentPage({ params }: Props) {
       </div>
 
       {/* ------------------------------------------------------------------ */}
-      <article className="mt-8 rounded-2xl border border-border bg-surface p-8 print:mt-0 print:rounded-none print:border-0 print:p-0">
+      <article className="mt-8 panel p-8 print:mt-0 print:rounded-none print:border-0 print:p-0">
         <header className="flex flex-wrap items-start justify-between gap-6 border-b border-border pb-6">
           <div>
             <p className="font-mono text-[0.65rem] uppercase tracking-[0.16em] text-text-subtle">

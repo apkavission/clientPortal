@@ -40,9 +40,15 @@ export function Sidebar({ groups, onNavigate }: { groups: NavGroup[]; onNavigate
                     onClick={onNavigate}
                     aria-current={active ? "page" : undefined}
                     className={cn(
-                      "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
+                      /* `rail-link` carries the wash and the bar on the left
+                         edge, both as pseudo-elements that scale rather than
+                         as a background and a shadow that blink. The bar was
+                         an inset box-shadow: it vanished from one item and
+                         appeared on another with nothing in between, so on
+                         every navigation the eye had to find it again. */
+                      "rail-link flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
                       active
-                        ? "bg-accent-soft font-semibold text-accent shadow-[inset_3px_0_0_var(--accent)]"
+                        ? "font-semibold text-accent"
                         : "text-text-muted hover:bg-surface-2 hover:text-text",
                     )}
                   >

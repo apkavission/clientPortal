@@ -10,6 +10,7 @@ import { HEALTH_LABEL, HEALTH_TONE, STAGE_LABEL } from "@/lib/labels";
 import { requireMenu } from "@/lib/auth/session";
 import { getProjects, type ProjectSummary } from "@/lib/queries/admin";
 import { formatDate } from "@/lib/utils";
+import { PageHead } from "@/components/ui/page-head";
 
 export const metadata: Metadata = { title: "Projects" };
 
@@ -49,23 +50,20 @@ export default async function ProjectsPage({ searchParams }: Props) {
 
   return (
     <div className="mx-auto w-full max-w-5xl">
-      <header className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold">Projects</h1>
-          <p className="measure mt-2 text-sm leading-relaxed text-text-muted">
-            A project starts as a proposal. Once the client accepts it, approving
-            it here sets up both sign-ins and emails them.
-          </p>
-        </div>
-
-        <ButtonLink href="/projects/new">
-          <Plus className="size-4" aria-hidden />
-          New project
-        </ButtonLink>
-      </header>
+      <PageHead
+        section="Work"
+        title="Projects"
+        lede="A project starts as a proposal. Once the client accepts it, approving it here sets up both sign-ins and emails them."
+        actions={
+          <ButtonLink href="/projects/new">
+            <Plus className="size-4" aria-hidden />
+            New project
+          </ButtonLink>
+        }
+      />
 
       {projects.length === 0 ? (
-        <div className="mt-10 rounded-2xl border border-dashed border-border bg-surface-2/40 p-8">
+        <div className="mt-10 panel border-dashed bg-surface-2/40 p-8">
           <h2 className="text-lg font-semibold">Nothing yet</h2>
           <p className="measure mt-3 text-sm leading-relaxed text-text-muted">
             Add a client first, then a project under them.
@@ -98,7 +96,7 @@ function Group({ title, projects }: { title: string; projects: ProjectSummary[] 
           <li key={project.id}>
             <Link
               href={`/projects/${project.slug}`}
-              className="block rounded-2xl border border-border bg-surface p-5 transition-colors hover:border-border-strong"
+              className="block panel panel-link p-5"
             >
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0">

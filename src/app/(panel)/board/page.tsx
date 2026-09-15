@@ -6,6 +6,7 @@ import { requireMenu } from "@/lib/auth/session";
 import { BOARD_COLUMNS, TASK_PRIORITY_LABEL, TASK_STATUS_LABEL, TASK_TONE } from "@/lib/labels";
 import { getMyTasks, getUnassignedTasks, type BoardTask } from "@/lib/queries/admin";
 import { cn, formatDate } from "@/lib/utils";
+import { PageHead } from "@/components/ui/page-head";
 
 export const metadata: Metadata = { title: "My board" };
 
@@ -38,16 +39,19 @@ export default async function BoardPage() {
 
   return (
     <div className="mx-auto w-full max-w-7xl">
-      <header>
-        <h1 className="text-2xl font-semibold">My board</h1>
-        <p className="measure mt-2 text-sm leading-relaxed text-text-muted">
-          Everything assigned to you, across every project, in the order work
-          moves: to do, then in progress, in review, blocked, done. Move a card
-          with the control at the bottom of it — and moving one moves the
-          client&rsquo;s percentage with it, because that figure is worked out
-          from these rows rather than typed anywhere.
-        </p>
-      </header>
+      <PageHead
+        section="Overview"
+        title="My board"
+        lede={
+          <>
+            Everything assigned to you, across every project, in the order work
+            moves: to do, then in progress, in review, blocked, done. Move a card
+            with the control at the bottom of it — and moving one moves the
+            client&rsquo;s percentage with it, because that figure is worked out
+            from these rows rather than typed anywhere.
+          </>
+        }
+      />
 
       {/*
         What is actually on this person's plate, in one line.

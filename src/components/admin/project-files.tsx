@@ -65,7 +65,7 @@ export function ProjectFiles({
   const shared = files.filter((file) => file.is_client_visible).length;
 
   return (
-    <section className="rounded-2xl border border-border bg-surface p-6">
+    <section className="panel p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="flex items-center gap-2 text-base font-semibold">
           <Paperclip className="size-4" aria-hidden />

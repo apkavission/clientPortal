@@ -19,7 +19,20 @@ import { createClient } from "@supabase/supabase-js";
 import { readFileSync } from "node:fs";
 
 /**
- * The first of these files that exists, resolved against this script.
+ * Every one of these files that exists, read in order and merged.
+ *
+ * **Merged, not first-wins**, and the difference is not academic. The
+ * credentials this script needs live in two files by design — the client's in
+ * the portal's, the employee's in the tracker's — and the first version stopped
+ * at the first file it could open. That was harmless for as long as the only
+ * readable file on this machine was the tracker's, which happens to carry both.
+ * The moment the portal got its own `.env.test.local` holding just the client,
+ * the employee's password vanished and the script died with *"could not sign in
+ * as undefined"* — a message that names neither the credential nor where it
+ * should live.
+ *
+ * A nearer file still wins on any key it sets; the rest are filled in from
+ * further away.
  *
  * These paths were absolute — `c:/Users/kumar/portal/.env.local` — which
  * worked on exactly one computer. On a second machine every check in here died
@@ -32,21 +45,22 @@ import { readFileSync } from "node:fs";
  * anywhere else.
  */
 function env(...candidates) {
+  const out = {};
+
   for (const path of candidates) {
     try {
-      const out = {};
       const text = readFileSync(new URL(path, import.meta.url), "utf8");
       for (const line of text.split(/\r?\n/)) {
         const match = /^([A-Z0-9_]+)=(.*)$/.exec(line.trim());
-        if (match) out[match[1]] = match[2].replace(/^"|"$/g, "");
+        if (match && !(match[1] in out)) out[match[1]] = match[2].replace(/^"|"$/g, "");
       }
-      return out;
     } catch {
-      /* Try the next one. Absent is a normal state: not every machine has the
-         tracker checked out beside this. */
+      /* Absent is a normal state: not every machine has the tracker checked
+         out beside this. */
     }
   }
-  return {};
+
+  return out;
 }
 
 const config = env("../.env.local");

@@ -186,6 +186,176 @@ export type Database = {
         Relationships: [];
       };
       /** A table. */
+      attendance_breaks: {
+        Row: {
+          id: string;
+          attendance_id: string;
+          started_at: string;
+          ended_at: string | null;
+          note: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          attendance_id: string;
+          started_at?: string;
+          ended_at?: string | null;
+          note?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          attendance_id?: string;
+          started_at?: string;
+          ended_at?: string | null;
+          note?: string | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      /** A table. */
+      chat_attachments: {
+        Row: {
+          id: string;
+          message_id: string;
+          filename: string;
+          storage_key: string;
+          mime_type: string | null;
+          size_bytes: number | null;
+          width: number | null;
+          height: number | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          message_id: string;
+          filename: string;
+          storage_key: string;
+          mime_type?: string | null;
+          size_bytes?: number | null;
+          width?: number | null;
+          height?: number | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          message_id?: string;
+          filename?: string;
+          storage_key?: string;
+          mime_type?: string | null;
+          size_bytes?: number | null;
+          width?: number | null;
+          height?: number | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      /** A table. */
+      chat_message_reactions: {
+        Row: {
+          id: string;
+          message_id: string;
+          staff_id: string | null;
+          client_user_id: string | null;
+          emoji: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          message_id: string;
+          staff_id?: string | null;
+          client_user_id?: string | null;
+          emoji: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          message_id?: string;
+          staff_id?: string | null;
+          client_user_id?: string | null;
+          emoji?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      /** A table. */
+      chat_message_stars: {
+        Row: {
+          message_id: string;
+          staff_id: string | null;
+          client_user_id: string | null;
+          created_at: string;
+        };
+        Insert: {
+          message_id: string;
+          staff_id?: string | null;
+          client_user_id?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          message_id?: string;
+          staff_id?: string | null;
+          client_user_id?: string | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      /** A table. */
+      chat_messages: {
+        Row: {
+          id: string;
+          conversation_id: string;
+          author_staff_id: string | null;
+          author_client_user_id: string | null;
+          author_name: string;
+          body: string;
+          created_at: string;
+          reply_to_id: string | null;
+          edited_at: string | null;
+          deleted_at: string | null;
+          pinned_at: string | null;
+          pinned_by: string | null;
+          removed_by: string | null;
+          removed_by_name: string | null;
+          removed_reason: string | null;
+        };
+        Insert: {
+          id?: string;
+          conversation_id: string;
+          author_staff_id?: string | null;
+          author_client_user_id?: string | null;
+          author_name: string;
+          body: string;
+          created_at?: string;
+          reply_to_id?: string | null;
+          edited_at?: string | null;
+          deleted_at?: string | null;
+          pinned_at?: string | null;
+          pinned_by?: string | null;
+          removed_by?: string | null;
+          removed_by_name?: string | null;
+          removed_reason?: string | null;
+        };
+        Update: {
+          id?: string;
+          conversation_id?: string;
+          author_staff_id?: string | null;
+          author_client_user_id?: string | null;
+          author_name?: string;
+          body?: string;
+          created_at?: string;
+          reply_to_id?: string | null;
+          edited_at?: string | null;
+          deleted_at?: string | null;
+          pinned_at?: string | null;
+          pinned_by?: string | null;
+          removed_by?: string | null;
+          removed_by_name?: string | null;
+          removed_reason?: string | null;
+        };
+        Relationships: [];
+      };
+      /** A table. */
       client_projects: {
         Row: {
           id: string;
@@ -378,6 +548,7 @@ export type Database = {
           accepted_at: string | null;
           created_at: string;
           updated_at: string;
+          last_seen_at: string | null;
         };
         Insert: {
           id?: string;
@@ -391,6 +562,7 @@ export type Database = {
           accepted_at?: string | null;
           created_at?: string;
           updated_at?: string;
+          last_seen_at?: string | null;
         };
         Update: {
           id?: string;
@@ -404,6 +576,7 @@ export type Database = {
           accepted_at?: string | null;
           created_at?: string;
           updated_at?: string;
+          last_seen_at?: string | null;
         };
         Relationships: [];
       };
@@ -453,6 +626,237 @@ export type Database = {
           lead_id?: string | null;
           created_at?: string;
           updated_at?: string;
+        };
+        Relationships: [];
+      };
+      /** A table. */
+      conversation_members: {
+        Row: {
+          id: string;
+          conversation_id: string;
+          staff_id: string | null;
+          client_user_id: string | null;
+          last_read_at: string | null;
+          joined_at: string;
+        };
+        Insert: {
+          id?: string;
+          conversation_id: string;
+          staff_id?: string | null;
+          client_user_id?: string | null;
+          last_read_at?: string | null;
+          joined_at?: string;
+        };
+        Update: {
+          id?: string;
+          conversation_id?: string;
+          staff_id?: string | null;
+          client_user_id?: string | null;
+          last_read_at?: string | null;
+          joined_at?: string;
+        };
+        Relationships: [];
+      };
+      /** A table. */
+      conversations: {
+        Row: {
+          id: string;
+          kind: Database["portal"]["Enums"]["conversation_kind"];
+          project_id: string | null;
+          title: string | null;
+          created_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          kind?: Database["portal"]["Enums"]["conversation_kind"];
+          project_id?: string | null;
+          title?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          kind?: Database["portal"]["Enums"]["conversation_kind"];
+          project_id?: string | null;
+          title?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      /** A view. */
+      designations_master: {
+        Row: {
+          key: string | null;
+          label: string | null;
+          family: string | null;
+          sort_order: number | null;
+          is_active: boolean | null;
+        };
+        Insert: {
+          key?: string | null;
+          label?: string | null;
+          family?: string | null;
+          sort_order?: number | null;
+          is_active?: boolean | null;
+        };
+        Update: {
+          key?: string | null;
+          label?: string | null;
+          family?: string | null;
+          sort_order?: number | null;
+          is_active?: boolean | null;
+        };
+        Relationships: [];
+      };
+      /** A table. */
+      document_signatures: {
+        Row: {
+          id: string;
+          document_id: string;
+          party: string;
+          staff_id: string | null;
+          client_user_id: string | null;
+          signed_name: string;
+          signature_image: string | null;
+          signed_at: string;
+        };
+        Insert: {
+          id?: string;
+          document_id: string;
+          party: string;
+          staff_id?: string | null;
+          client_user_id?: string | null;
+          signed_name: string;
+          signature_image?: string | null;
+          signed_at?: string;
+        };
+        Update: {
+          id?: string;
+          document_id?: string;
+          party?: string;
+          staff_id?: string | null;
+          client_user_id?: string | null;
+          signed_name?: string;
+          signature_image?: string | null;
+          signed_at?: string;
+        };
+        Relationships: [];
+      };
+      /** A table. */
+      document_types: {
+        Row: {
+          key: string;
+          label: string;
+          belongs_to: string;
+          needs_period: boolean;
+          needs_amount: boolean;
+          signs_by_default: boolean;
+          sort_order: number;
+          is_active: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          key: string;
+          label: string;
+          belongs_to?: string;
+          needs_period?: boolean;
+          needs_amount?: boolean;
+          signs_by_default?: boolean;
+          sort_order?: number;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          key?: string;
+          label?: string;
+          belongs_to?: string;
+          needs_period?: boolean;
+          needs_amount?: boolean;
+          signs_by_default?: boolean;
+          sort_order?: number;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      /** A table. */
+      documents: {
+        Row: {
+          id: string;
+          title: string;
+          staff_id: string | null;
+          client_id: string | null;
+          project_id: string | null;
+          payment_id: string | null;
+          amount: number | null;
+          period_start: string | null;
+          period_end: string | null;
+          issued_on: string;
+          storage_key: string | null;
+          filename: string | null;
+          mime_type: string | null;
+          needs_signature: boolean;
+          note: string | null;
+          created_by: string | null;
+          created_at: string;
+          updated_at: string;
+          kind_key: string;
+          paid_on: string | null;
+          paid_method: string | null;
+        };
+        Insert: {
+          id?: string;
+          title: string;
+          staff_id?: string | null;
+          client_id?: string | null;
+          project_id?: string | null;
+          payment_id?: string | null;
+          amount?: number | null;
+          period_start?: string | null;
+          period_end?: string | null;
+          issued_on?: string;
+          storage_key?: string | null;
+          filename?: string | null;
+          mime_type?: string | null;
+          needs_signature?: boolean;
+          note?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+          kind_key: string;
+          paid_on?: string | null;
+          paid_method?: string | null;
+        };
+        Update: {
+          id?: string;
+          title?: string;
+          staff_id?: string | null;
+          client_id?: string | null;
+          project_id?: string | null;
+          payment_id?: string | null;
+          amount?: number | null;
+          period_start?: string | null;
+          period_end?: string | null;
+          issued_on?: string;
+          storage_key?: string | null;
+          filename?: string | null;
+          mime_type?: string | null;
+          needs_signature?: boolean;
+          note?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+          kind_key?: string;
+          paid_on?: string | null;
+          paid_method?: string | null;
         };
         Relationships: [];
       };
@@ -644,6 +1048,43 @@ export type Database = {
           sort_order?: number;
           created_at?: string;
           updated_at?: string;
+        };
+        Relationships: [];
+      };
+      /** A table. */
+      notifications: {
+        Row: {
+          id: string;
+          staff_id: string | null;
+          client_user_id: string | null;
+          kind: string;
+          title: string;
+          body: string | null;
+          link: string | null;
+          read_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          staff_id?: string | null;
+          client_user_id?: string | null;
+          kind: string;
+          title: string;
+          body?: string | null;
+          link?: string | null;
+          read_at?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          staff_id?: string | null;
+          client_user_id?: string | null;
+          kind?: string;
+          title?: string;
+          body?: string | null;
+          link?: string | null;
+          read_at?: string | null;
+          created_at?: string;
         };
         Relationships: [];
       };
@@ -996,6 +1437,10 @@ export type Database = {
           tracker_menu_extra: string[];
           tracker_menu_denied: string[];
           role_key: string | null;
+          date_of_birth: string | null;
+          joined_on: string | null;
+          last_seen_at: string | null;
+          designation_key: string | null;
         };
         Insert: {
           id?: string;
@@ -1011,6 +1456,10 @@ export type Database = {
           tracker_menu_extra?: string[];
           tracker_menu_denied?: string[];
           role_key?: string | null;
+          date_of_birth?: string | null;
+          joined_on?: string | null;
+          last_seen_at?: string | null;
+          designation_key?: string | null;
         };
         Update: {
           id?: string;
@@ -1026,6 +1475,10 @@ export type Database = {
           tracker_menu_extra?: string[];
           tracker_menu_denied?: string[];
           role_key?: string | null;
+          date_of_birth?: string | null;
+          joined_on?: string | null;
+          last_seen_at?: string | null;
+          designation_key?: string | null;
         };
         Relationships: [];
       };
@@ -1054,6 +1507,31 @@ export type Database = {
           work_latitude?: number | null;
           work_longitude?: number | null;
           work_radius_metres?: number | null;
+        };
+        Relationships: [];
+      };
+      /** A table. */
+      task_assignees: {
+        Row: {
+          task_id: string;
+          staff_id: string;
+          assigned_by: string | null;
+          assigned_by_name: string | null;
+          assigned_at: string;
+        };
+        Insert: {
+          task_id: string;
+          staff_id: string;
+          assigned_by?: string | null;
+          assigned_by_name?: string | null;
+          assigned_at?: string;
+        };
+        Update: {
+          task_id?: string;
+          staff_id?: string;
+          assigned_by?: string | null;
+          assigned_by_name?: string | null;
+          assigned_at?: string;
         };
         Relationships: [];
       };
@@ -1094,6 +1572,46 @@ export type Database = {
           attachments?: Json;
           created_at?: string;
           updated_at?: string;
+        };
+        Relationships: [];
+      };
+      /** A table. */
+      task_events: {
+        Row: {
+          id: string;
+          task_id: string;
+          from_status: Database["portal"]["Enums"]["task_status"] | null;
+          to_status: Database["portal"]["Enums"]["task_status"];
+          moved_by: string | null;
+          moved_by_name: string;
+          handed_to: string | null;
+          handed_to_name: string | null;
+          reason: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          task_id: string;
+          from_status?: Database["portal"]["Enums"]["task_status"] | null;
+          to_status: Database["portal"]["Enums"]["task_status"];
+          moved_by?: string | null;
+          moved_by_name: string;
+          handed_to?: string | null;
+          handed_to_name?: string | null;
+          reason?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          task_id?: string;
+          from_status?: Database["portal"]["Enums"]["task_status"] | null;
+          to_status?: Database["portal"]["Enums"]["task_status"];
+          moved_by?: string | null;
+          moved_by_name?: string;
+          handed_to?: string | null;
+          handed_to_name?: string | null;
+          reason?: string | null;
+          created_at?: string;
         };
         Relationships: [];
       };
@@ -1280,6 +1798,7 @@ export type Database = {
       approval_status: "pending" | "approved" | "changes_requested";
       client_status: "prospect" | "active" | "paused" | "closed";
       client_user_role: "primary" | "member" | "viewer";
+      conversation_kind: "direct" | "group" | "project";
       day_part: "full" | "first_half" | "second_half";
       file_category: "document" | "design" | "deliverable" | "reference";
       health: "on_track" | "at_risk" | "delayed";
@@ -1293,7 +1812,7 @@ export type Database = {
       requirement_status: "agreed" | "in_progress" | "delivered" | "accepted" | "dropped";
       staff_role: "owner" | "manager" | "developer" | "designer" | "qa";
       task_priority: "low" | "normal" | "high" | "urgent";
-      task_status: "backlog" | "todo" | "in_progress" | "in_review" | "blocked" | "done" | "cancelled";
+      task_status: "backlog" | "todo" | "in_progress" | "in_review" | "blocked" | "needs_changes" | "done" | "cancelled";
     };
     CompositeTypes: Record<never, never>;
   };

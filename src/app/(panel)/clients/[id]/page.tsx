@@ -50,11 +50,11 @@ export default async function ClientPage({ params }: Props) {
         Clients
       </Link>
 
-      <h1 className="mt-4 text-2xl font-semibold">
+      <h1 className="head-rule mt-4 text-2xl font-semibold">
         {client.company_name ?? client.name}
       </h1>
 
-      <section className="mt-8 rounded-2xl border border-border bg-surface p-6">
+      <section className="mt-8 panel p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-base font-semibold">Projects</h2>
           <ButtonLink href={`/projects/new?client=${client.id}`} variant="secondary">

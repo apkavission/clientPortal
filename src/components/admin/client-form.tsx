@@ -33,7 +33,7 @@ export function ClientForm({ client }: { client?: ClientRow }) {
     <form action={action} className="space-y-8">
       {client && <input type="hidden" name="id" value={client.id} />}
 
-      <section className="rounded-2xl border border-border bg-surface p-6">
+      <section className="panel p-6">
         <h2 className="text-base font-semibold">Who they are</h2>
 
         <div className="mt-5 grid gap-5 sm:grid-cols-2">
@@ -138,7 +138,7 @@ export function ClientForm({ client }: { client?: ClientRow }) {
         </div>
       </section>
 
-      <section className="rounded-2xl border border-border bg-surface p-6">
+      <section className="panel p-6">
         <h2 className="text-base font-semibold">For their documents</h2>
         <p className="measure mt-2 text-sm leading-relaxed text-text-muted">
           These go onto anything printed for them — a proposal, an agreement, an
@@ -173,7 +173,7 @@ export function ClientForm({ client }: { client?: ClientRow }) {
         </div>
       </section>
 
-      <section className="rounded-2xl border border-border bg-surface p-6">
+      <section className="panel p-6">
         <h2 className="text-base font------semibold">Notes</h2>
         <p className="measure mt-2 text-sm leading-relaxed text-text-muted">
           Ours. Nothing here is ever printed or shown to them.

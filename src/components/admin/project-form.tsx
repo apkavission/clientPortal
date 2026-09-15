@@ -138,7 +138,7 @@ export function ProjectForm({
       </div>
 
       {/* ---------------------------------------------------------------- */}
-      <section hidden={step !== 0} className="rounded-2xl border border-border bg-surface p-6">
+      <section hidden={step !== 0} className="panel p-6">
         <h2 className="text-base font-semibold">The project</h2>
 
         <div className="mt-5 space-y-5">
@@ -383,7 +383,7 @@ export function ProjectForm({
       </section>
 
       {/* ---------------------------------------------------------------- */}
-      <section hidden={step !== 1} className="rounded-2xl border border-border bg-surface p-6">
+      <section hidden={step !== 1} className="panel p-6">
         <h2 className="text-base font-semibold">What was asked for, and what we will do</h2>
         <p className="measure mt-2 text-sm leading-relaxed text-text-muted">
           Both of these go onto the document the client is sent. Keeping them
@@ -490,7 +490,7 @@ export function ProjectForm({
       </section>
 
       {/* ---------------------------------------------------------------- */}
-      <section hidden={step !== 2} className="rounded-2xl border border-border bg-surface p-6">
+      <section hidden={step !== 2} className="panel p-6">
         <h2 className="text-base font-semibold">Money</h2>
         <p className="measure mt-2 text-sm leading-relaxed text-text-muted">
           Only the quote and the discount are typed here. What has been paid comes
@@ -574,7 +574,7 @@ export function ProjectForm({
       </section>
 
       {/* ---------------------------------------------------------------- */}
-      <section hidden={step !== 3} className="rounded-2xl border border-border bg-surface p-6">
+      <section hidden={step !== 3} className="panel p-6">
         <h2 className="text-base font-semibold">Ours only</h2>
 
         <div className="mt-5 space-y-5">

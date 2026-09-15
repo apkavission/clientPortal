@@ -41,7 +41,14 @@ export function Shell({
       panel's. The tracker was given this same treatment on 2026-09-02.
     */
     <div className="flex h-dvh overflow-hidden">
-      <aside className="hidden w-60 shrink-0 flex-col overflow-y-auto border-r border-border bg-surface lg:flex">
+      {/*
+        `chrome-rail` is the wash and the lit edge; `scroll-hint` is the
+        shadow that appears on whichever end has more menu beyond it. The
+        rail carries enough groups that on a 720px laptop the last one sits
+        below the fold, and a rail with no scrollbar and no shadow looks
+        exactly like a rail with nothing else in it.
+      */}
+      <aside className="chrome-rail scroll-hint scroll-thin hidden w-60 shrink-0 flex-col overflow-y-auto lg:flex">
         <div className="flex h-24 items-center border-b border-border px-5">
           <Link href="/" aria-label="Dashboard">
             <BrandMark height={72} />
@@ -51,7 +58,7 @@ export function Shell({
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex h-24 shrink-0 items-center gap-3 border-b border-border bg-surface px-4 sm:px-6">
+        <header className="chrome-bar flex h-24 shrink-0 items-center gap-3 px-4 sm:px-6">
           <div className="lg:hidden">
             <MobileNav groups={groups} />
           </div>
@@ -83,8 +90,8 @@ export function Shell({
           the full height can set `h-full` on its own root without fighting a
           padded box.
         */}
-        <main className="relative flex-1 overflow-y-auto">
-          <div className="h-full px-4 py-8 sm:px-6 lg:px-10">{children}</div>
+        <main className="chrome-field relative flex-1 overflow-y-auto">
+          <div className="page-enter h-full px-4 py-8 sm:px-6 lg:px-10">{children}</div>
         </main>
       </div>
     </div>

@@ -21,14 +21,26 @@ export default async function LoginPage({ searchParams }: Props) {
   const query = await searchParams;
   const next = typeof query.next === "string" ? query.next : null;
 
+  /*
+    The same field the signed-in screens sit on.
+
+    This is the first thing a client ever sees of the company, and a white box
+    centred on flat grey is what every sign-in page on the internet looks like.
+
+    The comment is here and not in the JSX below, where a curly-brace comment
+    in the slot before an element's opening tag is an expression where a return
+    value is expected — a parse error rather than a comment. Writing that out
+    inside a block comment is its own trap: the closing marker of the inner
+    comment ends the outer one, and everything after it is parsed as code.
+  */
   return (
-    <main className="container-page flex min-h-dvh flex-col items-center justify-center py-16">
+    <main className="chrome-field container-page flex min-h-dvh flex-col items-center justify-center py-16">
       <div className="w-full max-w-sm">
         <div className="flex justify-center">
           <BrandMark height={128} />
         </div>
 
-        <div className="mt-8 rounded-2xl border border-border bg-surface p-6 shadow-[var(--shadow-2)] sm:p-8">
+        <div className="mt-8 panel p-6 shadow-[var(--shadow-2)] sm:p-8">
           <h1 className="text-lg font-semibold">Sign in</h1>
           <p className="mt-1.5 text-sm text-text-muted">
             For clients and for the team. The same account works in both.

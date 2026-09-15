@@ -24,9 +24,21 @@ export const metadata: Metadata = { title: "No access" };
 export default async function NoAccessPage() {
   const session = await getStaffSession();
 
+  /*
+    The same field the signed-in screens sit on.
+
+    This is the first thing a client ever sees of the company, and a white box
+    centred on flat grey is what every sign-in page on the internet looks like.
+
+    The comment is here and not in the JSX below, where a curly-brace comment
+    in the slot before an element's opening tag is an expression where a return
+    value is expected — a parse error rather than a comment. Writing that out
+    inside a block comment is its own trap: the closing marker of the inner
+    comment ends the outer one, and everything after it is parsed as code.
+  */
   return (
-    <main className="container-page flex min-h-dvh flex-col items-center justify-center py-16">
-      <div className="w-full max-w-md rounded-2xl border border-border bg-surface p-8 shadow-[var(--shadow-2)]">
+    <main className="chrome-field container-page flex min-h-dvh flex-col items-center justify-center py-16">
+      <div className="w-full max-w-md panel p-8 shadow-[var(--shadow-2)]">
         <h1 className="text-xl font-semibold">This account cannot open the panel</h1>
 
         <p className="measure mt-3 text-sm leading-relaxed text-text-muted">

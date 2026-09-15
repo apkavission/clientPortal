@@ -74,9 +74,9 @@ export default async function RequestThreadPage({ params }: Props) {
           {project.name}
         </Link>
 
-        <h1 className="mt-1 text-2xl font-semibold">{request.title}</h1>
+        <h1 className="head-rule mt-1 text-2xl font-semibold">{request.title}</h1>
 
-        <div className="mt-3 flex flex-wrap items-center gap-2">
+        <div className="mt-8 flex flex-wrap items-center gap-2">
           <Badge tone={REQUEST_TONE[request.status]}>
             {REQUEST_STATUS_LABEL[request.status]}
           </Badge>
@@ -185,7 +185,7 @@ export default async function RequestThreadPage({ params }: Props) {
           </ul>
         )}
 
-        <div className="mt-6 rounded-2xl border border-border bg-surface p-5">
+        <div className="mt-6 panel p-5">
           <MessageBox requestId={request.id} />
         </div>
       </section>

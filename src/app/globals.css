@@ -483,6 +483,364 @@ body {
   }
 }
 
+/* ===========================================================================
+   Edition 02 — the panel cut.
+
+   The six public demos got the full treatment: an aura behind the page, grain
+   over it, numbered chapters, headings that rise out of a mask as you reach
+   them. None of that belongs here, and it is worth being explicit about why,
+   because the temptation to paste it in is real.
+
+   **A marketing page is read once; an application is read every day.** Grain
+   under a paragraph somebody skims for eight seconds is texture. Grain under a
+   table somebody reads for eight hours is dirt on the screen. A heading that
+   animates in is a pleasure the first time and a delay the fortieth. So the
+   decoration here is confined to the chrome — the rail and the header, the
+   parts nobody reads — and the working surface stays clean.
+
+   What is kept is the part that actually reads as expensive: one rhythm for
+   every page head, one surface for every card, one honest response to a
+   pointer, and content that settles into place on arrival instead of snapping.
+
+   The whole layer is identical in the portal and the tracker, on purpose. Two
+   applications a company runs side by side should not feel like two companies.
+   =========================================================================== */
+
+/* ---------------------------------------------------------------------------
+   The chrome.
+
+   A rail and a header in flat `--surface` on a `--bg` page is the default
+   every admin template ships with. What separates it from something drawn on
+   purpose is depth of about one millimetre: a wash of the brand at the top of
+   the rail, a hairline that is brighter where the light would hit it, and a
+   header that blurs what passes under it rather than hiding it.
+   --------------------------------------------------------------------------- */
+
+@utility chrome-rail {
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in oklab, var(--accent) 7%, var(--surface)) 0%,
+      var(--surface) 240px
+    );
+  border-right: 1px solid var(--border);
+  /* The lit edge. One pixel, and the rail stops looking printed on. */
+  box-shadow: inset -1px 0 0 color-mix(in oklab, var(--surface) 70%, transparent);
+}
+
+@utility chrome-bar {
+  background: color-mix(in oklab, var(--surface) 88%, transparent);
+  backdrop-filter: saturate(1.4) blur(10px);
+  border-bottom: 1px solid var(--border);
+}
+
+/*
+  What the page sits on.
+
+  Two very large, very faint radial washes, fixed so they do not travel with
+  the scroll. At this opacity you cannot point at them; take them away and the
+  screen goes flat, which is the whole test for whether a background is doing
+  its job.
+*/
+@utility chrome-field {
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(
+      70rem 32rem at 8% -10%,
+      color-mix(in oklab, var(--accent) 9%, transparent) 0%,
+      transparent 60%
+    ),
+    radial-gradient(
+      56rem 28rem at 100% 0%,
+      color-mix(in oklab, var(--brand) 7%, transparent) 0%,
+      transparent 55%
+    );
+  background-attachment: fixed;
+}
+
+/* ---------------------------------------------------------------------------
+   A rail that admits it scrolls.
+
+   The tracker's rail carries six groups. On a laptop at 720px tall the last
+   two are below the fold, and a rail with no scrollbar and no shadow looks
+   exactly like a rail with nothing else in it — somebody concludes the menu is
+   missing rather than that it continues. This is the same fix the company
+   panel got, and for the same reason.
+
+   Pure CSS, no observer: two gradients painted `local` sit at the top and
+   bottom of the *content*, two painted `scroll` sit at the top and bottom of
+   the *box*. Where they coincide they cancel, so a shadow appears only on the
+   edge that has something beyond it.
+   --------------------------------------------------------------------------- */
+
+@utility scroll-hint {
+  background-image:
+    linear-gradient(to bottom, var(--surface), transparent),
+    linear-gradient(to top, var(--surface), transparent),
+    linear-gradient(to bottom, color-mix(in oklab, var(--text) 14%, transparent), transparent),
+    linear-gradient(to top, color-mix(in oklab, var(--text) 14%, transparent), transparent);
+  background-position: 0 0, 0 100%, 0 0, 0 100%;
+  background-size: 100% 28px, 100% 28px, 100% 10px, 100% 10px;
+  background-repeat: no-repeat;
+  background-attachment: local, local, scroll, scroll;
+}
+
+@utility scroll-thin {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
+}
+
+/* ---------------------------------------------------------------------------
+   The rail's active item.
+
+   It was an inset box-shadow: a bar that blinks from one item to the next with
+   nothing in between, so on every navigation the eye has to find it again.
+   This is one bar that travels, drawn by a scaling pseudo-element rather than
+   by animating a shadow — a transform the compositor can carry, which an inset
+   shadow is not.
+   --------------------------------------------------------------------------- */
+
+@utility rail-link {
+  position: relative;
+  isolation: isolate;
+}
+
+.rail-link::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: var(--accent-soft);
+  opacity: 0;
+  transform: scaleX(0.96);
+  transform-origin: left center;
+  transition:
+    opacity var(--duration-base) var(--ease-out),
+    transform var(--duration-base) var(--ease-out);
+}
+
+.rail-link[aria-current="page"]::before {
+  opacity: 1;
+  transform: none;
+}
+
+.rail-link::after {
+  content: "";
+  position: absolute;
+  inset-block: 6px;
+  inset-inline-start: 0;
+  width: 3px;
+  border-radius: 999px;
+  background: var(--accent);
+  transform: scaleY(0);
+  transition: transform 260ms var(--ease-out);
+}
+
+.rail-link[aria-current="page"]::after {
+  transform: none;
+}
+
+/* ---------------------------------------------------------------------------
+   The page head.
+
+   Every screen in both applications opens the same way, and that consistency
+   is most of what "designed" means in an application: a small label saying
+   which part of the system you are in, the name of the screen, one sentence of
+   what it is for, and the actions on the right.
+
+   The rule under the heading draws itself once on arrival. It is the single
+   piece of motion allowed on the working surface, it is 500ms, and it is the
+   thing that makes a page feel like it opened rather than appeared.
+   --------------------------------------------------------------------------- */
+
+@utility micro {
+  font-family: var(--font-mono-stack);
+  font-size: 0.65rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-subtle);
+}
+
+@utility head-rule {
+  position: relative;
+}
+
+.head-rule::after {
+  content: "";
+  position: absolute;
+  inset-inline-start: 0;
+  bottom: -0.9rem;
+  height: 2px;
+  width: 2.75rem;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--accent), transparent);
+  transform-origin: left center;
+  animation: head-rule-draw 560ms var(--ease-out) both;
+}
+
+@keyframes head-rule-draw {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Arrival.
+
+   Not a scroll reveal. A scroll reveal in an application means a table whose
+   rows are invisible until you scroll them into view, and the first time a
+   person scrolls fast they see an empty page — which is exactly the bug the
+   demos took two tries to get right.
+
+   This runs once, on load, over about a third of a second, and it is finished
+   before anybody has read the heading. `--enter` orders a handful of blocks;
+   beyond six the stagger is capped, because a tenth card waiting 900ms to
+   appear is a slow page, not a considered one.
+   --------------------------------------------------------------------------- */
+
+@utility enter {
+  animation: enter-rise 420ms var(--ease-out) both;
+  animation-delay: calc(min(var(--enter, 0), 6) * 55ms);
+}
+
+@keyframes enter-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Every screen settles in.
+
+   This is on the shell rather than on thirty-two pages, and it animates the
+   page's own root element rather than its sections: one movement for the whole
+   screen, not a cascade of blocks arriving one after another while somebody is
+   trying to read the first of them.
+
+   It is 320ms and it is a fade with six pixels of rise. Long enough that a
+   navigation reads as a page opening; short enough that it is over before the
+   heading has been read. Anything slower would be a tax paid on every click by
+   somebody who clicks two hundred times a day.
+   --------------------------------------------------------------------------- */
+
+/*
+  Deliberately a plain rule and not an `@utility`: nothing is set on the
+  container itself, only on the page inside it, and Tailwind rejects a utility
+  with no properties in it. The class is a hook, not a utility.
+*/
+.page-enter > * {
+  animation: enter-rise 320ms var(--ease-out) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-enter > * {
+    animation: none !important;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   The working surface.
+
+   One card, used everywhere, with three states rather than one. A card that is
+   only a container gets `panel`. A card that is a link gets `panel-link` as
+   well and answers the pointer — a hairline that warms, a shadow that deepens
+   a little, and one pixel of lift. One pixel: enough to read as "this
+   responds", not enough to shift the text under the cursor.
+   --------------------------------------------------------------------------- */
+
+@utility panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl, 1.125rem);
+  box-shadow: var(--shadow-1);
+}
+
+@utility panel-link {
+  transition:
+    border-color var(--duration-base) var(--ease-out),
+    box-shadow var(--duration-base) var(--ease-out),
+    transform var(--duration-base) var(--ease-out);
+}
+
+.panel-link:hover {
+  border-color: color-mix(in oklab, var(--accent) 40%, var(--border));
+  box-shadow: var(--shadow-2);
+  transform: translateY(-1px);
+}
+
+.panel-link:active {
+  transform: none;
+  box-shadow: var(--shadow-1);
+}
+
+/*
+  A figure worth reading across the room.
+
+  Reports, the dashboard, the top of a project — the same block each time.
+  Tabular figures, so a column of them does not jitter as the numbers change.
+
+  Set in the sans face and not the mono one, which was the first attempt: the
+  mono here is a programmer's face and it draws a slashed zero. "0 proposals
+  waiting" came out as Ø, which reads as a null, an error, or a crossed-out
+  number — three wrong answers to a question whose right answer is "none, and
+  that is fine". `tabular-nums` gives the alignment the mono was wanted for
+  without any of that.
+*/
+@utility stat {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl, 1.125rem);
+  padding: 1.125rem 1.25rem;
+}
+
+@utility stat-figure {
+  font-size: 1.75rem;
+  font-weight: 600;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+
+/* ---------------------------------------------------------------------------
+   Reduced motion.
+
+   Everything above is either a fade, a rise of eight pixels, or a rule that
+   draws itself. All three are decoration, and all three go. What does not go
+   is the colour change on the rail's active item and the hairline on hover:
+   those carry meaning, and removing them would leave somebody who asked for
+   less motion with less information.
+   --------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .enter,
+  .head-rule::after {
+    animation: none !important;
+  }
+
+  .head-rule::after {
+    transform: none;
+  }
+
+  .panel-link:hover {
+    transform: none;
+  }
+
+  .rail-link::before,
+  .rail-link::after {
+    transition: none;
+  }
+}
+
 /* ---------------------------------------------------------------------------
    Printing.
 

@@ -50,7 +50,7 @@ export function Contacts({
   const past = contacts.filter((contact) => !contact.is_active);
 
   return (
-    <section className="mt-8 rounded-2xl border border-border bg-surface p-6">
+    <section className="mt-8 panel p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-base font-semibold">Who can sign in</h2>
 
